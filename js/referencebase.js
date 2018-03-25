@@ -13,10 +13,11 @@ class Reference {
         this.argRef = {
             "v8": "8-bit value or expression",
             "v16": "16-bit value or expression",
-            "v8a": "List of 8-bit values, expressions, or ascii literals. Ascii literals are surrounded by single quotes, and single quotes within ascii literals must be escaped by using another single quote ('').",
+            "v8a": "List of 8-bit values, expressions, or ascii literals. Ascii literals are surrounded by single quotes, and single quotes within ascii literals must be escaped by using another single quote ('')",
             "reg": "8-bit register - A, B, C, D, E, H, L, or M",
             "regpair/PSW": "16-bit register pair or PSW register - BC, DE, HL, or PSW (PSW being a 16-bit register composed of the Status Register (S) augmented with the accumulator (A)",
             "regpair/SP": "16-bit register pair or SP register - BC, DE, HL, or SP (SP being the Stack Pointer Register, controlling the origin of the stack",
+            "regpair/BD": "16-bit register pair that is either BC or DE",
             "-": "No argument required"
         }
 
