@@ -32,7 +32,7 @@ code, .ref-usage {
   /*background:#33AAFF;*/
   background:rgba(51,170,255,0.4);
   
-  background-color:rgba(0,0,0,0.5);
+  background-color:rgba(0,0,0,0.8);
 }
 
 .myAwesomeTable {
@@ -53,7 +53,7 @@ code, .ref-usage {
 
 .challengeListContainerWidget {
   /*background:#33AAFF;*/
-  background-color:rgba(0,0,0,0.5);
+  background-color:rgba(0,0,0,0.8);
   position:absolute;
   left:0;
   top:0;
