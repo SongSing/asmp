@@ -1,0 +1,23 @@
+.device {
+  position:absolute;
+  right:0;
+  top:0;
+  bottom:0;
+  width:128px;
+  background:white;
+  z-index:100;
+}
+
+.sumRequester {
+  border-left:1px solid white;
+  background:#111;
+  color:white;
+  padding:8px;
+  min-height:48px;
+}
+
+.sumRequester-sum {
+  color:yellow;
+  position:absolute;
+  bottom:8px;
+}
