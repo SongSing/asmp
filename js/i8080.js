@@ -1199,6 +1199,7 @@ class i8080 {
                         var op = (byte.value & 0b00110000) >> 4;
                         switch (op) {
                             case 0b00: { // jmp
+                                console.log("aa");
                                 this.registers.PC.value++;
                                 this.registers.PC.value = this.memory.getWord(this.registers.PC.value) - 1;
                                 return dret;

@@ -1694,7 +1694,7 @@ class Assembler {
                 }).bind(this)
             },
 
-            JMP: {
+            JC: {
                 assemble: (function(addr, label, args) {
                     // 3 bytes
                     var byte = new int8(0b11000010 | (0b011 << 3));
