@@ -268,7 +268,7 @@ var challenges = [new Challenge("tutorial","Tutorial","bootcamp","Add 5 to the v
     d.$sum.innerText = "Sum: " + expectedBlob.sum;
 
     diffWidget.appendWidget("Expected Device", new WrapperWidget(d.$element));
-    diffWidget.appendWidget("Your Device", new WrapperWidget(currentDevice.$element));
+    diffWidget.appendWidget("Your Device", new WrapperWidget(currentDevice.$element.cloneNode(true)));
 }),new Challenge("bitwise","Bitwise Operations","bootcamp","Set the value of <b>A</b> to <code><b>A</b> & <b>B</b> | <b>C</b> ^ 255</code>. You can assume all 3 registers will hold random values.<br><br>Like the addition and subtraction instructions, there exist instructions that perform logical bitwise operations AND, OR, and XOR using either an explicit value/expression or a register.<br><br>These operations are as follows:<br><br><table class=\"myAwesomeTable\"><tr><th>Operation</th><th>Immediate Value</th><th>Register Value</th></tr><tr><td>AND</td><td><op>ANI</op></td><td><op>ANA</op></td></tr><tr><td>OR</td><td><op>ORI</op></td><td><op>ORA</op></td></tr><tr><td>XOR</td><td><op>XRI</op></td><td><op>XRA</op></td></tr></table>",["add"],["bitwise"],["A","B","C"],10000,function() {
 
 },function(processor, i) {
@@ -405,7 +405,9 @@ var challenges = [new Challenge("tutorial","Tutorial","bootcamp","Add 5 to the v
     d.setArray(expectedBlob.array);
 
     diffWidget.appendWidget("Expected Device", new WrapperWidget(d.$element));
-    diffWidget.appendWidget("Your Device", new WrapperWidget(currentDevice.$element));
+    var $c = currentDevice.$element.cloneNode(true);
+    $c.childNodes[0].getContext("2d").drawImage(currentDevice.$canvas, 0, 0);
+    diffWidget.appendWidget("Your Device", new WrapperWidget($c));
 })]; // will be built from challenges.cdoc
 
 function populateChallengeContainer() {
