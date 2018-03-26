@@ -29,6 +29,8 @@
   margin:0;
   box-sizing:border-box;
   background:rgba(141,131,141,1);
+  border:1px solid black;
+  border-radius:0px;
 }
 
 .screen-canvas {
