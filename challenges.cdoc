@@ -532,3 +532,57 @@ The instructions that operate specifically on/with Register Pairs are as follows
 }
 `diff: Challenge.regDiff
 ```
+`name: screen
+`title: Screen - Checkerboard
+`category: devices
+`requires: iodevices
+`unlocks: screen
+`tests: 1
+`registers: all
+`desc: Output a checkerboard design on the screen, starting with a black square.
+
+The screen device is a 9x9 monochrome screen, and accepts input as a series of two bytes - the first byte will indicate the 0-based index of the pixel to be operated upon, and the second byte will determine the operation. A second byte containing the value 0 will turn the pixel off, whereas any other value with turn the pixel on.
+`invoke: function() {
+    var d = new IO_Screen(processor, 9, 9);
+    setDevice(d);
+    processor.setDevice(0, d);
+}
+`setup: function(processor, i) {
+    currentDevice.reset();
+}
+`test: function(oldBlob, newBlob) {
+    return array_compare(currentDevice.array, [
+        1, 0, 1, 0, 1, 0, 1, 0, 1,
+        0, 1, 0, 1, 0, 1, 0, 1, 0,
+        1, 0, 1, 0, 1, 0, 1, 0, 1,
+        0, 1, 0, 1, 0, 1, 0, 1, 0,
+        1, 0, 1, 0, 1, 0, 1, 0, 1,
+        0, 1, 0, 1, 0, 1, 0, 1, 0,
+        1, 0, 1, 0, 1, 0, 1, 0, 1,
+        0, 1, 0, 1, 0, 1, 0, 1, 0,
+        1, 0, 1, 0, 1, 0, 1, 0, 1
+    ]);
+}
+`getExpected: function(oldBlob) {
+    return {
+        array: [
+            1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1
+        ]
+    };
+}
+`diff: function(diffWidget, oldBlob, expectedBlob) {
+    var d = new IO_Screen(processor);
+    d.setArray(expectedBlob.array);
+
+    diffWidget.appendWidget("Expected Device", new WrapperWidget(d.$element));
+    diffWidget.appendWidget("Your Device", new WrapperWidget(currentDevice.$element));
+}
+```

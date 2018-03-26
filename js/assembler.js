@@ -2629,7 +2629,7 @@ class Assembler {
                             error: "redefinition of EQU: " + label
                         };
                     } else {
-                        this.set[label] = data.value;
+                        this.sets[label] = data.value;
                     }
 
                     return {
@@ -2908,8 +2908,8 @@ class Assembler {
             }
 
             if (lines[i].trim().length === 0) {
-                lines.splice(i, 1);
-                i--;
+                /*lines.splice(i, 1);
+                i--;*/
                 continue;
             }
 
@@ -2951,6 +2951,12 @@ class Assembler {
         addr.value = 0x0000;
 
         for (var i = 0; i < lines.length; i++) {
+            if (lines[i].trim().length === 0) {
+                /*lines.splice(i, 1);
+                i--;*/
+                continue;
+            }
+
             var og = addr.value;
             var z = this.assembleLine(lines[i], addr); // expected to directly manip addr
             if (z.error) {
@@ -2997,6 +3003,11 @@ class Assembler {
         // return { error: null | errorStr, addr: new mem address to continue asm from }
         // label: opcode args comment
         str = str.trim();
+
+        if (str === "") {
+            return { error: null };
+        }
+
         var firstWord = str.split(" ")[0];
 
         // shallow assembly //
@@ -3145,7 +3156,7 @@ class Assembler {
                     }
                 }
             } else {
-                args = null;
+                args = [];
             }
 
             var z = {
@@ -3167,6 +3178,13 @@ class Assembler {
                 error: "provide addr to resolveExpression PLEASE THANKS"
             };
         }
+
+        if (e === undefined) {
+            return {
+                error: "Invalid expression. Are you missing arguments?"
+            };
+        }
+
         // returns { error, array<int16> } //
         var og = e;
         var ret = [];

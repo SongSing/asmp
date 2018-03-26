@@ -368,7 +368,45 @@ var challenges = [new Challenge("tutorial","Tutorial","bootcamp","Add 5 to the v
             DE: or.BC.plus(20)
         }
     };
-},Challenge.regDiff)]; // will be built from challenges.cdoc
+},Challenge.regDiff),new Challenge("screen","Screen - Checkerboard","devices","Output a checkerboard design on the screen, starting with a black square.<br><br>The screen device is a 9x9 monochrome screen, and accepts input as a series of two bytes - the first byte will indicate the 0-based index of the pixel to be operated upon, and the second byte will determine the operation. A second byte containing the value 0 will turn the pixel off, whereas any other value with turn the pixel on.",["iodevices"],["screen"],["all"],1,function() {
+    var d = new IO_Screen(processor, 9, 9);
+    setDevice(d);
+    processor.setDevice(0, d);
+},function(processor, i) {
+    currentDevice.reset();
+},function(oldBlob, newBlob) {
+    return array_compare(currentDevice.array, [
+        1, 0, 1, 0, 1, 0, 1, 0, 1,
+        0, 1, 0, 1, 0, 1, 0, 1, 0,
+        1, 0, 1, 0, 1, 0, 1, 0, 1,
+        0, 1, 0, 1, 0, 1, 0, 1, 0,
+        1, 0, 1, 0, 1, 0, 1, 0, 1,
+        0, 1, 0, 1, 0, 1, 0, 1, 0,
+        1, 0, 1, 0, 1, 0, 1, 0, 1,
+        0, 1, 0, 1, 0, 1, 0, 1, 0,
+        1, 0, 1, 0, 1, 0, 1, 0, 1
+    ]);
+},function(oldBlob) {
+    return {
+        array: [
+            1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1
+        ]
+    };
+},function(diffWidget, oldBlob, expectedBlob) {
+    var d = new IO_Screen(processor);
+    d.setArray(expectedBlob.array);
+
+    diffWidget.appendWidget("Expected Device", new WrapperWidget(d.$element));
+    diffWidget.appendWidget("Your Device", new WrapperWidget(currentDevice.$element));
+})]; // will be built from challenges.cdoc
 
 function populateChallengeContainer() {
     widgets.challengeListContainer.clear();

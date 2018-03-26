@@ -1279,7 +1279,7 @@ class i8080 {
                         return dret;
                     }
                     case 0b101: { // push, call
-                        if (byte.getBit(3) === 1) { // push
+                        if (byte.getBit(3) === 0) { // push
                             var rpi = (byte.value & 0b00110000) >> 4; // 0-3
                             var rp = this.resolveRegisterPair(rpi, this.registers.PSW);
                             if (rp.error) {
@@ -1295,6 +1295,7 @@ class i8080 {
 
                             this.stack.push(this.registers.PC.value + 1);
                             this.registers.PC.value = addr.value - 1;
+                            console.log(addr.value);
                         }
                         return dret;
                     }
@@ -1489,14 +1490,13 @@ class MemoryStack {
 
     push(i16) {
         i16 = new int16(i16);
-        this.memory.setByte(this.register.value - 1, i16.highBits);
-        this.memory.setByte(this.register.value - 2, i16.lowBits);
-        this.register.value -= 2;
+        this.memory.setByte(--this.register.value, i16.highBits);
+        this.memory.setByte(--this.register.value, i16.lowBits);
     }
 
     pop() {
         var ret = new int16(0);
-        ret.highBits = this.memory.getByte(this.register.value + 1);
+        ret.highBits = this.memory.getByte(this.register.plus(1));
         ret.lowBits = this.memory.getByte(this.register.value);
         this.register.value += 2;
         return ret;

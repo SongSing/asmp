@@ -21,3 +21,28 @@
   position:absolute;
   bottom:8px;
 }
+
+.screen {
+  width:180px;
+  height:180px;
+  padding:0;
+  margin:0;
+  box-sizing:border-box;
+  background:rgba(141,131,141,1);
+}
+
+.screen-canvas {
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%, -50%);
+  width:171px;
+  height:171px;
+  padding:0;
+  margin:0;
+  box-sizing:border-box;
+  image-rendering:optimizespeed;
+  background-color:#9bbc0f;
+  border:1px solid black;
+  border-radius:3px;
+}

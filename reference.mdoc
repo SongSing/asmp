@@ -178,14 +178,14 @@ Sets the carry bit to 0.
 Compare Register or Memory With Accumulator
 reg
 CZSPX
-Behaves the same as SUB, but no registers other than the Status Register are affected.
+Behaves the same as SUB, internally subtracting the value of $1 from <b>A</b>, but no registers other than the Status Register are affected.
 Useful for testing for (in)equality using the status bits.
 
-::CMI
+::CPI
 Compare Immediate With Accumulator
 v8
 CZSPX
-Behaves the same as SBI, but no registers other than the Status Register are affected.
+Behaves the same as SBI, internally subtracting $1 from <b>A</b>, but no registers other than the Status Register are affected.
 Use for testing of (in)equality using the status bits.
 
 ::RLC
