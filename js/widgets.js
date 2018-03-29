@@ -14,7 +14,7 @@ function hideElement__($e) {
 }
 
 function showElement__($e) {
-    $e.style.display = $e._display || "block";
+    $e.style.display = $e._display || getComputedStyle($e).display;
 }
 
 class CodeWidget {
@@ -34,6 +34,7 @@ class CodeWidget {
         this.$element.appendChild(this.$input);
 
         this.$input.addEventListener("input", this.updateLineNumbers.bind(this));
+        this.$input.addEventListener("input", (function() { this.changed = true; }).bind(this));
         this.$input.addEventListener("scroll", this.updateLineNumbers.bind(this));
     }
 
@@ -70,6 +71,7 @@ class CodeWidget {
 
     set value(s) {
         this.$input.value = s;
+        this.changed = true;
         this.updateLineNumbers();
     }
 }
@@ -143,7 +145,7 @@ class MemoryWidget {
             }).join("") + "</span><br>";
         }).join("");
 
-        this.$memory.innerHTML = str;
+        this.$memory.innerHTML = str.substr(0, str.length - 4);
     }
 
     hide() {
@@ -824,5 +826,96 @@ class ChallengeListWidget {
         }
         
         this.$container.appendChild($e);
+    }
+}
+
+class StackWidget {
+    constructor(stack) {
+        this.stack = stack;
+
+        this.$element = document.createElement("div");
+        this.$element.className = "stackWidget";
+
+        this.$inner = document.createElement("div");
+        this.$inner.className = "stackWidget-inner";
+        this.$element.appendChild(this.$inner);
+    }
+
+    hide() {
+        hideElement__(this.$element);
+    }
+
+    show() {
+        showElement__(this.$element);
+    }
+
+    update() {
+        var arr = this.stack.toArray();
+        this.$inner.innerText = arr.join("\n");   
+    }
+}
+
+class DeviceContainerWidget {
+    constructor() {
+        this.$element = document.createElement("div");
+        this.$element.className = "deviceContainerWidget";
+
+        this.$inner = document.createElement("div");
+        this.$inner.className = "deviceContainerWidget-inner";
+        this.$element.appendChild(this.$inner);
+
+        this.devices = [];
+    }
+
+    hide() {
+        hideElement__(this.$element);
+    }
+
+    show() {
+        showElement__(this.$element);
+    }
+
+    update() {
+        for (var i = 0; i < this.devices.length; i++) {
+            this.devices[i].update && this.devices[i].update();
+        }
+    }
+
+    appendDevice(d) {
+        this.devices.push(d);
+        this.$inner.appendChild(d.$element);
+    }
+
+    clear() {
+        array_clear(this.devices);
+        this.$inner.innerHTML = "";
+    }
+
+    reset() {
+        return this.clear();
+    }
+}
+
+class PanelWidget {
+    constructor(id) {
+        this.$element = document.createElement("div");
+        this.$element.className = "panelWidget";
+        if (id) this.$element.id = "panelWidget-" + id;
+    }
+
+    hide() {
+        hideElement__(this.$element);
+    }
+
+    show() {
+        this.$element.style.display = this.displayStyle;
+    }
+
+    appendChild(...args) {
+        this.$element.appendChild(...args);
+    }
+
+    appendWidget(widget) {
+        this.$element.appendChild(widget.$element);
     }
 }

@@ -588,3 +588,57 @@ The screen device is a 9x9 monochrome screen, and accepts input as a series of t
     diffWidget.appendWidget("Your Device", new WrapperWidget($c));
 }
 ```
+`name: screenReverse
+`title: Screen - Mirror
+`category: devices
+`requires: screen
+`unlocks: screenReverse
+`tests: 100
+`registers: all
+`desc: Mirror the screen horizontally. The screen is device 0.
+
+In addition to writing pixels to the screen, you may read pixels. This can be done by sending the screen the index on which to operate, then using the <op>in</op> command to read a byte from the screen. A 0 read from the screen will indicate that the pixel is not turned on, whereas any other value will indicate that the pixel is turned on.
+
+Requesting a pixel in this fashion will reset the screen's input state in the same way that writing a pixel does, so the next thing you will have to do will always be to select an index.
+`invoke: function() {
+    var d = new IO_Screen(processor, 9, 9);
+    setDevice(d);
+    processor.setDevice(0, d);
+}
+`setup: function(processor, i) {
+    currentDevice.reset();
+    var arr = [];
+    for (var i = 0; i < 81; i++) {
+        arr.push(pick1(0, 1));
+    }
+
+    currentDevice.setArray(arr);
+    currentDevice.ogArray = array_copy(arr);
+}
+`test: function(oldBlob, newBlob) {
+    return array_compare(currentDevice.array, array_mirror_h(array_copy(currentDevice.ogArray), currentDevice.resX));
+}
+`getExpected: function(oldBlob) {
+    return {
+        array: array_mirror_h(array_copy(currentDevice.ogArray), currentDevice.resX)
+    };
+}
+`diff: function(diffWidget, oldBlob, expectedBlob) {
+    var d = new IO_Screen(processor);
+    var $c;
+
+    d.setArray(currentDevice.ogArray);
+    $c = d.$element.cloneNode(true);
+    $c.childNodes[0].getContext("2d").drawImage(d.$canvas, 0, 0);
+    diffWidget.appendWidget("Input Device", new WrapperWidget($c));
+
+    d.setArray(expectedBlob.array);
+    $c = d.$element.cloneNode(true);
+    $c.childNodes[0].getContext("2d").drawImage(d.$canvas, 0, 0);
+    diffWidget.appendWidget("Expected Device", new WrapperWidget($c));
+
+    $c = currentDevice.$element.cloneNode(true);
+    $c.childNodes[0].getContext("2d").drawImage(currentDevice.$canvas, 0, 0);
+    diffWidget.appendWidget("Your Device", new WrapperWidget($c));
+}
+```

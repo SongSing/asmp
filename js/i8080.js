@@ -555,7 +555,7 @@ class i8080 {
         this.registers.PSW = null;
 
         this.registers.M = new MRegister8(this.registers.HL, this.memory);
-        this.registers.S = new Register8(); // status flags
+        this.registers.S = new Register8();
         this.registers.PC = new Register16(); // program counter
         this.registers.SP = new Register16(); // stack pointer
         this.registers.PSW = new Register8Pair(this.registers.S, this.registers.A);
@@ -607,16 +607,20 @@ class i8080 {
 
     reset(clearMem) {
         if (clearMem === undefined) clearMem = true;
-        if (clearMem) this.memory.clear();
+
+        if (clearMem) {
+            this.memory.clear();
+            this.programLength = 0;
+        }
 
         for (var registerName in this.registers) {
             if (registerName !== "M")
                 this.registers[registerName].value = 0;
         }
         
-        this.ioDevices.forEach(d => {
+        /*this.ioDevices.forEach(d => {
             d.reset && d.reset();
-        });
+        });*/
 
         this.interruptsEnabled = false;
         this.stopped = false;
@@ -1199,7 +1203,6 @@ class i8080 {
                         var op = (byte.value & 0b00110000) >> 4;
                         switch (op) {
                             case 0b00: { // jmp
-                                console.log("aa");
                                 this.registers.PC.value++;
                                 this.registers.PC.value = this.memory.getWord(this.registers.PC.value) - 1;
                                 return dret;
@@ -1296,7 +1299,6 @@ class i8080 {
 
                             this.stack.push(this.registers.PC.value + 1);
                             this.registers.PC.value = addr.value - 1;
-                            console.log(addr.value);
                         }
                         return dret;
                     }
@@ -1464,7 +1466,7 @@ class Memory {
     }
 
     toBlob() {
-        return this.array.slice();
+        return array_copy(this.array);
     }
 
     static copyBlobElement(be) {
@@ -1479,7 +1481,7 @@ class Memory {
 
     static copyBlob(blob) {
         //return blob.map(be => copyBlobElement(be));
-        return blob.slice();
+        return array_copy(blob);
     }
 }
 
@@ -1487,19 +1489,39 @@ class MemoryStack {
     constructor(memory, register16) {
         this.memory = memory;
         this.register = register16;
+        this.depth = 0;
     }
 
     push(i16) {
         i16 = new int16(i16);
-        this.memory.setByte(--this.register.value, i16.highBits);
-        this.memory.setByte(--this.register.value, i16.lowBits);
+        this.memory.setByte(this.register.minus(1).value, i16.highBits);
+        this.memory.setByte(this.register.minus(2).value, i16.lowBits);
+        this.register.value -= 2;
+        this.depth++;
     }
 
     pop() {
         var ret = new int16(0);
-        ret.highBits = this.memory.getByte(this.register.plus(1));
+        ret.highBits = this.memory.getByte(this.register.plus(1).value);
         ret.lowBits = this.memory.getByte(this.register.value);
         this.register.value += 2;
+        this.depth--;
+        return ret;
+    }
+
+    peek(depth) {
+        depth = coerceInt(depth);
+        var ret = new int16(0);
+        ret.highBits = this.memory.getByte(this.register.plus(depth * 2 + 1).value);
+        ret.lowBits = this.memory.getByte(this.register.plus(depth * 2));
+    }
+
+    toArray() {
+        var ret = [];
+        for (var i = 0; i < this.depth; i++) {
+            ret.push(this.peek(i).value);
+        }
+
         return ret;
     }
 }

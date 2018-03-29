@@ -700,10 +700,12 @@ code, .ref-usage {
 }
 
 .registerContainer {
-  width:256px;
+  width:360px;
   border:6px solid #25A;
   border-radius:7px;
   box-sizing:border-box;
+  text-align:center;
+  background:white;
 }
 
 .registerWidget-displayMenu {
@@ -724,15 +726,14 @@ code, .ref-usage {
 }
 
 .registerWidget {
-  position:relative;
   background:#FFAAFF;
-  border:1px solid #44AAFF;
-  margin:0px 0;
-  text-align:left;
-  box-sizing:border-box;
-  width:100%;
+  display:inline-block;
+  text-align:center;
+  margin:4px;
+  border:1px solid #aaa;
+  border-radius:2px;
   font-size:14px;
-  padding:2px 8px;
+  width:32px;
 }
 
 .registerWidget-A,
@@ -742,7 +743,7 @@ code, .ref-usage {
 .registerWidget-E,
 .registerWidget-H,
 .registerWidget-L {
-  background:white;
+  background:#eee;
 }
 
 .registerWidget-BC,
@@ -750,22 +751,29 @@ code, .ref-usage {
 .registerWidget-HL,
 .registerWidget-PSW {
   background:#AAFFCC;
+  width:74px;
 }
 
 .registerWidget-M {
   background:#FFFFAA;
+  width:74px;
+}
+
+.registerWidget-PC, .registerWidget-SP {
+  width:74px;
 }
 
 .registerWidget-header {
-  display:inline-block;
+  display:block;
+  border-bottom:1px solid #aaa;
   cursor:pointer;
-  width:36px;
+  background-color:rgba(255,255,255,0.6);
 }
 
 .registerWidget-header:after {
-  content:": ";
 }
 
 .registerWidget-value {
-  display:inline;
+  display:block;
+  padding:0 4px;
 }

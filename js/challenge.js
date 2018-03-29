@@ -85,7 +85,7 @@ class Challenge {
     runTest(processor) {
         processor.clear(true);
         doAssemble(true);
-        var memCache = processor.memory.array.slice();
+        var memCache = array_copy(processor.memory.array);
 
         var time = [0,0,0,0,0];
 
@@ -94,7 +94,7 @@ class Challenge {
             processor.clear(true);
             time[0] += Date.now();
             time[1] -= Date.now();
-            processor.memory.array = memCache.slice();
+            processor.memory.array = array_copy(memCache);
             time[1] += Date.now();
             time[2] -= Date.now();
             this.setupFn(processor, i);
@@ -406,6 +406,42 @@ var challenges = [new Challenge("tutorial","Tutorial","bootcamp","Add 5 to the v
 
     diffWidget.appendWidget("Expected Device", new WrapperWidget(d.$element));
     var $c = currentDevice.$element.cloneNode(true);
+    $c.childNodes[0].getContext("2d").drawImage(currentDevice.$canvas, 0, 0);
+    diffWidget.appendWidget("Your Device", new WrapperWidget($c));
+}),new Challenge("screenReverse","Screen - Mirror","devices","Mirror the screen horizontally. The screen is device 0.<br><br>In addition to writing pixels to the screen, you may read pixels. This can be done by sending the screen the index on which to operate, then using the <op>in</op> command to read a byte from the screen. A 0 read from the screen will indicate that the pixel is not turned on, whereas any other value will indicate that the pixel is turned on.<br><br>Requesting a pixel in this fashion will reset the screen's input state in the same way that writing a pixel does, so the next thing you will have to do will always be to select an index.",["screen"],["screenReverse"],["all"],100,function() {
+    var d = new IO_Screen(processor, 9, 9);
+    setDevice(d);
+    processor.setDevice(0, d);
+},function(processor, i) {
+    currentDevice.reset();
+    var arr = [];
+    for (var i = 0; i < 81; i++) {
+        arr.push(pick1(0, 1));
+    }
+
+    currentDevice.setArray(arr);
+    currentDevice.ogArray = array_copy(arr);
+},function(oldBlob, newBlob) {
+    return array_compare(currentDevice.array, array_mirror_h(array_copy(currentDevice.ogArray), currentDevice.resX));
+},function(oldBlob) {
+    return {
+        array: array_mirror_h(array_copy(currentDevice.ogArray), currentDevice.resX)
+    };
+},function(diffWidget, oldBlob, expectedBlob) {
+    var d = new IO_Screen(processor);
+    var $c;
+
+    d.setArray(currentDevice.ogArray);
+    $c = d.$element.cloneNode(true);
+    $c.childNodes[0].getContext("2d").drawImage(d.$canvas, 0, 0);
+    diffWidget.appendWidget("Input Device", new WrapperWidget($c));
+
+    d.setArray(expectedBlob.array);
+    $c = d.$element.cloneNode(true);
+    $c.childNodes[0].getContext("2d").drawImage(d.$canvas, 0, 0);
+    diffWidget.appendWidget("Expected Device", new WrapperWidget($c));
+
+    $c = currentDevice.$element.cloneNode(true);
     $c.childNodes[0].getContext("2d").drawImage(currentDevice.$canvas, 0, 0);
     diffWidget.appendWidget("Your Device", new WrapperWidget($c));
 })]; // will be built from challenges.cdoc

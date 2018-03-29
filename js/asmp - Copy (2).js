@@ -46,7 +46,6 @@ function init() {
         memory: new MemoryWidget(processor.memory, processor.lengthArray, processor.registers.PC),
         console: new ConsoleWidget(),
         workspaceContainer: new WrapperWidget(document.getElementById("container")),
-        consoleContainer: new WrapperWidget(document.getElementById("consoleContainer")),
         gameContainer: new WrapperWidget(document.getElementById("gameContainer")),
         registerContainer: new RegisterContainerWidget(),
         diff: new DiffWidget(),
@@ -54,8 +53,13 @@ function init() {
         tutorialText: new WrapperWidget(document.getElementById("tutorialText")),
         reference: new ReferenceWidget(reference),
         challengeListContainer: new ChallengeListContainerWidget(),
-        deviceContainer: new WrapperWidget(document.getElementById("deviceContainer")),
-        stack: new StackWidget(processor.stack)
+        deviceContainer: new DeviceContainerWidget(),
+        stack: new StackWidget(processor.stack),
+
+        panel1: new PanelWidget(1),
+        panel2: new PanelWidget(2),
+        panel3: new PanelWidget(3),
+        panel4: new PanelWidget(4)
     };
 
     widgets.workspaceContainer.appendWidget(widgets.reference);
@@ -94,21 +98,34 @@ function init() {
     document.getElementById("resetDevice").addEventListener("click", () => doResetDevice());
     document.getElementById("ref").addEventListener("click", () => doShowRef());
     document.getElementById("back").addEventListener("click", () => doGoBack());
+    document.getElementById("stackButton-memory").addEventListener("click", () => doToggleMemory());
+    document.getElementById("stackButton-stack").addEventListener("click", () => doToggleStack());
 
     widgets.smallReference = new SmallReferenceWidget(widgets.reference);
 
     widgets.registerContainer.$element.id = "registerContainer-main";
 
-    widgets.consoleContainer.appendWidget(widgets.memory);
-    widgets.consoleContainer.appendWidget(widgets.console);
+    widgets.gameContainer.appendWidget(widgets.panel1);
+    widgets.gameContainer.appendWidget(widgets.panel2);
+    widgets.gameContainer.appendWidget(widgets.panel3);
+    widgets.gameContainer.appendWidget(widgets.panel4);
+
+    widgets.panel1.appendChild(document.getElementById("buttonContainer"));
+    widgets.panel4.appendChild(document.getElementById("challengeText"));
+    widgets.panel2.appendChild(document.getElementById("stackButtonContainer"));
+
+    widgets.panel2.appendWidget(widgets.memory);
+    widgets.panel2.appendWidget(widgets.stack);
+    widgets.panel4.appendWidget(widgets.console);
+    widgets.panel4.appendWidget(widgets.deviceContainer);
 
     widgets.registerContainer.importRegisters(processor.registers);
-    widgets.gameContainer.appendWidget(widgets.code);
-    widgets.gameContainer.appendWidget(widgets.registerContainer);
+    widgets.panel3.appendWidget(widgets.code);
+    widgets.panel2.appendWidget(widgets.registerContainer);
     widgets.workspaceContainer.appendWidget(widgets.diff);
     widgets.workspaceContainer.appendWidget(widgets.smallReference);
 
-    widgets.memory.show();
+    doToggleMemory();
     
     widgets.workspaceContainer.hide();
     widgets.diff.hide();
@@ -132,10 +149,8 @@ function updateWidgets() {
 }
 
 function setDevice(d) {
-    widgets.deviceContainer.$element.innerHTML = "";
-    if (d.$element) {
-        widgets.deviceContainer.$element.appendChild(d.$element);
-    }
+    widgets.deviceContainer.clear();
+    widgets.deviceContainer.appendDevice(d);
 
     currentDevice = d;
 }
@@ -380,6 +395,20 @@ function doGoBack() {
     widgets.workspaceContainer.hide();
     widgets.challengeListContainer.show();
     array_clear(processor.ioDevices);
+}
+
+function doToggleMemory() {
+    showElement__(widgets.memory.$element);
+    hideElement__(widgets.stack.$element);
+    widgets.find("#stackButton-memory").classList.add("active");
+    widgets.find("#stackButton-stack").classList.remove("active");
+}
+
+function doToggleStack() {
+    hideElement__(widgets.memory.$element);
+    showElement__(widgets.stack.$element);
+    widgets.find("#stackButton-memory").classList.remove("active");
+    widgets.find("#stackButton-stack").classList.add("active");
 }
 
 function deinit() {

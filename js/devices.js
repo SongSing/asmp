@@ -107,6 +107,7 @@ class IO_Screen extends IODevice {
 
     reset() {
         this.awaiting = false;
+        this.awaitingIndex = 0;
         this.$canvas.getContext("2d").clearRect(0, 0, this.$canvas.width, this.$canvas.height);
         for (var i = 0; i < this.resX * this.resY; i++) {
             this.array[i] = 0;
@@ -133,7 +134,12 @@ class IO_Screen extends IODevice {
     }
 
     requestByte() {
-        return super.requestByte();
+        if (this.awaiting) {
+            this.awaiting = false;
+            return new int8(this.array[this.awaitingIndex]);
+        } else {
+            return new int8(255);
+        }
     }
 
     fillIndex(index) {
