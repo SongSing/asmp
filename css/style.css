@@ -11,6 +11,7 @@ code, .ref-usage {
   background:#fefefe;
   padding:2px 4px;
   display:inline-block;
+  color: #111;
 }
 
 .clickable-op {
@@ -132,10 +133,11 @@ code, .ref-usage {
 
 #tutorialText {
   position:absolute;
-  z-index:1001;
+  z-index:1002;
   background:white;
   padding:12px;
   border-radius:7px;
+  border: 1px solid #aaa;
 }
 
 .tutorialButtonContainer {
@@ -187,8 +189,8 @@ code, .ref-usage {
   right:0;
   top:32px;
   bottom:0;
-  background:#AACCFF;
-  padding:16px;
+  background:#ccc;
+  padding:0;
   box-sizing:border-box;
   overflow:auto;
   padding-top:0;
@@ -209,7 +211,7 @@ code, .ref-usage {
 
 .ref-widget-close, .ref-widget-openNew {
   position:sticky;
-  left:calc(100% - 32px);
+  right:16px;
   top:8px;
   transform:translate(30%, -0%);
   z-index:11;
@@ -221,7 +223,7 @@ code, .ref-usage {
   cursor:pointer;
   font-family:Helvetica, sans-serif;
   color:white;
-  margin:-64px;
+  margin:-64px -40px;
   background-image: url("../img/icons/close.png");
   background-size: 18px;
   background-repeat: no-repeat;
@@ -233,7 +235,7 @@ code, .ref-usage {
 }
 
 .ref-widget-openNew {
-  left:calc(100% - 72px);
+  right:16px;
   background-color:#5555ff;
   border:1px solid #11d;
 }
@@ -251,13 +253,16 @@ code, .ref-usage {
 }
 
 .refs-container > .ref-container:last-of-type {
-  margin-bottom:16px;
+  margin-bottom:0;
 }
 
 .refs-container > .ref-container {
   float:left;
-  width:calc(50% - 16px);
+  width:50%;
   min-height:240px;
+  margin:0;
+  border-radius:0;
+  background:#fafafa;
 }
 
 .ref-desc {
@@ -442,36 +447,68 @@ code, .ref-usage {
   position:absolute;
   left:0;
   top:0;
-  right:0;
-  bottom:180px;
+  height:100%;
+  width:100%;
+}
+
+.panelWidget {
+  position:relative;
+  height:100%;
+  float:left;
+}
+
+#panelWidget-1 {
+  width:64px;
+  background: #111;
+}
+
+#panelWidget-2 {
+  width:300px;
+  display:flex;
+  flex-flow:column;
+}
+
+#panelWidget-2 > * {
+  flex:0 1 auto;
+}
+
+#panelWidget-3 {
+  width:500px;
+}
+
+#panelWidget-4 {
+  width:calc(100% - 864px);
+  display:flex;
+  flex-flow:column;
+}
+
+#panelWidget-4 > * {
+  flex:0 1 auto;
 }
 
 #challengeText {
   background:#99d5ff;
-  position:absolute;
-  left:416px;
-  top:8px;
-  bottom:48px;
-  right:272px;
+  background:rgba(0,0,0,0.7);
+  color:white;
+  position:relative;
+  flex:1 1 auto !important;
   box-sizing:border-box;
-  border:6px solid #25A;
-  border-radius:7px;
-  padding:8px;
+  border:0px solid #25A;
+  border-radius:0px;
+  padding:8px 12px;
   overflow:auto;
   font-family:Helvetica, sans-serif;
 }
 
 .inputContainer {
-  position:absolute;
-  left:0;
-  top:0;
-  bottom:0;
-  width:400px;
+  width:100%;
+  height:100%;
   background:transparent;
+  position: relative;
 }
 
 .input, .lineNumbers {
-  width:350px;
+  width:calc(100% - 50px);
   height:500px;
   background:rgba(255,255,255,1);
   border:0px solid #aaa;
@@ -496,7 +533,9 @@ code, .ref-usage {
   background:#fff;
   overflow:hidden;
   text-align:right;
-  border-right:1px solid #aaa;
+  border:1px solid #aaa;
+  border-top:0;
+  border-bottom:0;
   background:#eee;
   color:#444;
 }
@@ -519,25 +558,18 @@ code, .ref-usage {
 }
 
 #buttonContainer {
-  position:absolute;
-  left:400px;
-  bottom:0px;
-  right:0;
-  padding-left:16px;
+  width:100%;
+  position: relative;
 }
 
 #buttonContainer > button {
-  bottom:8px;
-  height:32px;
-  background:#55DDFF;
-  color:black;
+  width:100%;
+  background:#222;
+  color:white;
+  height:64px;
+  border:0;
   cursor:pointer;
-  box-sizing:border-box;
-  border:3px solid #25A;
-  border-radius:5px;
-  float:left;
-  margin-right:8px;
-  position:relative;
+  position: relative;
 }
 
 #test {
@@ -545,7 +577,7 @@ code, .ref-usage {
 }
 
 #buttonContainer > button:hover {
-  background:#AAFFFF;
+  background:#444;
 }
 
 #buttonContainer > button:active {
@@ -558,44 +590,95 @@ code, .ref-usage {
   border-radius:3px;
 }
 
-#consoleContainer {
-  position:absolute;
-  left:0;
-  bottom:0;
-  right:0;
-  height:180px;
+.stackWidget {
+  position:relative;
+  background:#eee;
+  width:100%;
+  height:200px;
+  overflow-y:auto;
+  flex:1 1 auto !important;
 }
 
-.device {
-  position:absolute;
-  right:0;
+.stackWidget-header, .memoryWidget-header, .registerContainer-header {
+  position:relative;
+  left:0;
   top:0;
+  width:100%;
+  height:28px;
+  line-height:28px;
+  background:#ddd;
+  border-bottom:1px solid #aaa;
+  padding-left:8px;
+  box-sizing:border-box;
+  font-size:16px;
+}
+
+.stackWidget-inner {
+  position:absolute;
   bottom:0;
-  width:128px;
-  background:white;
-  z-index:100;
+  width:100%;
+  max-height:100%;
+  overflow-y:auto;
+}
+
+.stackWidget-inner-value {
+  display:inline-block;
+  border-top:1px solid #aaa;
+  width:100%;
+  padding:4px;
+  box-sizing:border-box;
+  background:#eee;
+}
+
+.memorySeekWidget {
+  background:black;
+  width:100%;
+  border:1px solid #aaa;
+  border-left:0;
+  border-right:0;
+}
+
+.memorySeekWidget-input {
+  width:calc(100% - 40px);
+  margin:0;
+  box-sizing:border-box;
+  background: white;
+  border: 1px solid #aaa;
+  height: 100%;
+  color: black;
+}
+
+.memorySeekWidget-button {
+  width:40px;
+  box-sizing:border-box;
+  background: white;
+  border: 1px solid #aaa;
+  height: 100%;
+  color: #111;
+  cursor: pointer;
 }
 
 .memoryWidget {
-  position:absolute;
-  bottom:0;
-  left:0;
-  top:0;
-  width:328px;
-  background:black;
-  color:white;
-  overflow:hidden;
-  padding:9px;
+  position:relative;
+  width:100%;
+  background:#eee;
+  color:black;
   box-sizing:border-box;
-  font-size:17px;
+  font-size:15.5px;
+}
+
+.memoryWidget-inner {
+  position:relative;
+  padding:4px 4px;
+}
+
+#panelWidget-2 > .memoryWidget {
+  border-top:1px solid #aaa;
 }
 
 .memoryWidget-memory {
-  position:absolute;
-  left:34px;
-  right:0px;
-  top:8px;
-  bottom:0px;
+  position:relative;
+  left:26px;
 }
 
 .memoryWidget-shallow {
@@ -606,6 +689,8 @@ code, .ref-usage {
   left:unset;
   right:unset;
   bottom:unset;
+  border:1px solid #aaa;
+  padding:4px;
 }
 
 .memoryWidget-memory-shallow {
@@ -624,13 +709,12 @@ code, .ref-usage {
   padding:0px 8px;
   height:50%;
   cursor:pointer;
-  background:black;
-  color:white;
+  background:transparent;
+  color:#333;
   border:0;
 }
 
 .memoryWidget-pageButton:hover {
-  background:white;
   color:black;
 }
 
@@ -646,30 +730,25 @@ code, .ref-usage {
 }
 
 .fadedText {
-  color:#ccc;
+  color:#333;
   display:inline;
 }
 
 .fadedText > .activeBit, .activeBit > .fadedText {
-  background:white;
+  background:#ffff00;
   color:black;
   box-sizing:border-box;
   display:inline;
 }
 
 .console {
-  position:absolute;
-  left:328px;
-  z-index:10;
-  right:0;
-  top:0;
-  bottom:0;
+  width:100%;
   background:black;
   color:white;
   overflow-y:auto;
   padding:8px;
-  border-left:1px solid white;
   box-sizing:border-box;
+  flex:0 1 200px !important;
 }
 
 .console-msg {
@@ -694,9 +773,12 @@ code, .ref-usage {
 }
 
 #registerContainer-main {
-  position:absolute;
-  right:8px;
-  top:8px;
+  width:100%;
+  border-radius:0;
+  border-width:0px;
+}
+
+#registerContainer-main > div {
 }
 
 .registerContainer {
@@ -704,6 +786,11 @@ code, .ref-usage {
   border:6px solid #25A;
   border-radius:7px;
   box-sizing:border-box;
+  font-size:20px;
+}
+
+.registerContainer-inner {
+  position:relative;
 }
 
 .registerWidget-displayMenu {
@@ -724,15 +811,12 @@ code, .ref-usage {
 }
 
 .registerWidget {
-  position:relative;
   background:#FFAAFF;
-  border:1px solid #44AAFF;
-  margin:0px 0;
   text-align:left;
-  box-sizing:border-box;
   width:100%;
-  font-size:14px;
-  padding:2px 8px;
+  box-sizing:border-box;
+  padding:1px 0;
+  padding-left:8px;
 }
 
 .registerWidget-A,
@@ -742,7 +826,7 @@ code, .ref-usage {
 .registerWidget-E,
 .registerWidget-H,
 .registerWidget-L {
-  background:white;
+  background:#eee;
 }
 
 .registerWidget-BC,
@@ -759,11 +843,11 @@ code, .ref-usage {
 .registerWidget-header {
   display:inline-block;
   cursor:pointer;
-  width:36px;
+  width:52px;
 }
 
 .registerWidget-header:after {
-  content:": ";
+  content:":";
 }
 
 .registerWidget-value {

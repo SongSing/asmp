@@ -85,6 +85,7 @@ class Challenge {
     runTest(processor) {
         processor.clear(true);
         doAssemble(true);
+        var plength = processor.programLength;
         var memCache = array_copy(processor.memory.array);
 
         var time = [0,0,0,0,0];
@@ -95,6 +96,7 @@ class Challenge {
             time[0] += Date.now();
             time[1] -= Date.now();
             processor.memory.array = array_copy(memCache);
+            processor.programLength = plength;
             time[1] += Date.now();
             time[2] -= Date.now();
             this.setupFn(processor, i);

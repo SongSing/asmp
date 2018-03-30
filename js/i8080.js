@@ -549,12 +549,14 @@ class i8080 {
             L: new Register8()
         };
 
+        this.registers.M = null;
         this.registers.BC = new Register8Pair(this.registers.B, this.registers.C);
         this.registers.DE = new Register8Pair(this.registers.D, this.registers.E);
         this.registers.HL = new Register8Pair(this.registers.H, this.registers.L);
         this.registers.PSW = null;
 
         this.registers.M = new MRegister8(this.registers.HL, this.memory);
+
         this.registers.S = new Register8();
         this.registers.PC = new Register16(); // program counter
         this.registers.SP = new Register16(); // stack pointer
@@ -610,6 +612,7 @@ class i8080 {
 
         if (clearMem) {
             this.memory.clear();
+            this.stack.clear();
             this.programLength = 0;
         }
 
@@ -1465,6 +1468,10 @@ class Memory {
         }
     }
 
+    reset(...args) {
+        return this.clear(...args);
+    }
+
     toBlob() {
         return array_copy(this.array);
     }
@@ -1492,6 +1499,14 @@ class MemoryStack {
         this.depth = 0;
     }
 
+    reset() {
+        this.depth = 0;
+    }
+
+    clear(...args) {
+        return this.reset(...args);
+    }
+
     push(i16) {
         i16 = new int16(i16);
         this.memory.setByte(this.register.minus(1).value, i16.highBits);
@@ -1514,6 +1529,7 @@ class MemoryStack {
         var ret = new int16(0);
         ret.highBits = this.memory.getByte(this.register.plus(depth * 2 + 1).value);
         ret.lowBits = this.memory.getByte(this.register.plus(depth * 2));
+        return ret;
     }
 
     toArray() {

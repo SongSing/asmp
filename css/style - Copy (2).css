@@ -731,7 +731,7 @@ code, .ref-usage {
   text-align:left;
   box-sizing:border-box;
   width:100%;
-  font-size:24px;
+  font-size:14px;
   padding:2px 8px;
 }
 
@@ -758,12 +758,12 @@ code, .ref-usage {
 
 .registerWidget-header {
   display:inline-block;
-  width:64px;
   cursor:pointer;
+  width:36px;
 }
 
 .registerWidget-header:after {
-  content:":    ";
+  content:": ";
 }
 
 .registerWidget-value {

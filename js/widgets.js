@@ -36,6 +36,27 @@ class CodeWidget {
         this.$input.addEventListener("input", this.updateLineNumbers.bind(this));
         this.$input.addEventListener("input", (function() { this.changed = true; }).bind(this));
         this.$input.addEventListener("scroll", this.updateLineNumbers.bind(this));
+
+        this.$input.addEventListener("keydown", function(e) {
+            if (e.keyCode === 9 || e.which === 9) {
+                e.preventDefault();
+                var s = this.selectionStart;
+                var se = this.selectionEnd;
+
+                if (e.shiftKey) {
+                    if (this.value.substr(s - 1, 1) === "\t") {
+                        this.value = this.value.substr(0, s - 1) + this.value.substr(s);
+                        this.selectionStart = s - 1;
+                        this.selectionEnd = se - 1;
+                    }
+                    return;
+                }
+
+                this.value = this.value.substr(0, s) + "\t" + this.value.substr(s);
+                this.selectionStart = s + 1;
+                this.selectionEnd = se + 1;
+            }
+        });
     }
 
     updateLineNumbers() {
@@ -85,6 +106,15 @@ class MemoryWidget {
         this.page = 0;
         this.pageLength = MemoryWidget.pageLength;
         this.pc = pc;
+
+        this.$header = document.createElement("div");
+        this.$header.className = "memoryWidget-header";
+        this.$header.innerText = "Memory";
+        this.$element.appendChild(this.$header);
+
+        this.$inner = document.createElement("div");
+        this.$inner.className = "memoryWidget-inner";
+        this.$element.appendChild(this.$inner);
         
         this.$memory = document.createElement("div");
         this.$memory.className = "memoryWidget-memory";
@@ -98,9 +128,9 @@ class MemoryWidget {
         this.$pageUp.innerText = "▲";
         this.$pageDown.innerText = "▼";
 
-        this.$element.appendChild(this.$memory);
-        this.$element.appendChild(this.$pageUp);
-        this.$element.appendChild(this.$pageDown);
+        this.$inner.appendChild(this.$memory);
+        this.$inner.appendChild(this.$pageUp);
+        this.$inner.appendChild(this.$pageDown);
 
         this.hlstart = 0;
         this.hlend = 1;
@@ -171,12 +201,62 @@ class MemoryWidget {
         this.update(false);
     }
 
+    setPage(...args) {
+        return this.doSetPage(...args);
+    }
+
     doPageUp() {
         this.doSetPage(--this.page);
     }
 
     doPageDown() {
         this.doSetPage(++this.page);
+    }
+
+    gotoAddress(addr) {
+        this.doSetPage(~~(coerceInt(addr) / (this.pageLength * 8)));
+    }
+}
+
+class MemorySeekWidget {
+    constructor(memWidget) {
+        this.memoryWidget = memWidget;
+
+        this.$element = document.createElement("div");
+        this.$element.className = "memorySeekWidget";
+
+        this.$input = document.createElement("input");
+        this.$input.type = "text";
+        this.$input.placeholder = "Goto address...";
+        this.$input.className = "memorySeekWidget-input";
+        this.$element.appendChild(this.$input);
+
+        this.$button = document.createElement("button");
+        this.$button.className = "memorySeekWidget-button";
+        this.$button.innerText = "Go";
+        this.$element.appendChild(this.$button);
+
+        this.$button.addEventListener("click", this.doSeek.bind(this));
+    }
+
+    doSeek() {
+        var v = this.$input.value;
+
+        if (!v.trim()) {
+            return;
+        }
+
+        var z = assembler.resolveExpression16(v, this.memoryWidget.pc.int);
+
+        if (z.error) {
+            widgets.console.err(z.error);
+            return;
+        }
+        z = z.value;
+
+        var addr = coerceInt(z);
+        console.log(addr);
+        this.memoryWidget.gotoAddress(addr);
     }
 }
 
@@ -243,11 +323,21 @@ class RegisterContainerWidget {
     constructor() {
         this.$element = document.createElement("div");
         this.$element.className = "registerContainer";
+
+        this.$header = document.createElement("div");
+        this.$header.className = "registerContainer-header";
+        this.$header.innerText = "Registers";
+        this.$element.appendChild(this.$header);
+
+        this.$inner = document.createElement("div");
+        this.$inner.className = "registerContainer-inner";
+        this.$element.appendChild(this.$inner);
+
         this.registerWidgets = {};
     }
 
     appendRegisterWidget(name, widget) {
-        this.$element.appendChild(widget.$element);
+        this.$inner.appendChild(widget.$element);
         this.registerWidgets[name] = widget;
     }
 
@@ -416,7 +506,7 @@ class ConsoleWidget {
     }
 
     clear() {
-        this.$element.innerHTML = "";
+        this.$element.innerHTML = "Ready.";
     }
 
     printHTML(html) {
@@ -839,6 +929,11 @@ class StackWidget {
         this.$inner = document.createElement("div");
         this.$inner.className = "stackWidget-inner";
         this.$element.appendChild(this.$inner);
+
+        this.$header = document.createElement("div");
+        this.$header.className = "stackWidget-header";
+        this.$header.innerText = "Stack";
+        this.$element.appendChild(this.$header);
     }
 
     hide() {
@@ -851,7 +946,14 @@ class StackWidget {
 
     update() {
         var arr = this.stack.toArray();
-        this.$inner.innerText = arr.join("\n");   
+
+        if (arr.length === 0) {
+            this.$inner.innerHTML = "<span class='stackWidget-inner-value'>(empty)</span>";
+            return;
+        }
+
+        var s = "<span class='stackWidget-inner-value'>";
+        this.$inner.innerHTML = s + arr.join("</span><br>" + s) + "</span>";
     }
 }
 
@@ -863,6 +965,10 @@ class DeviceContainerWidget {
         this.$inner = document.createElement("div");
         this.$inner.className = "deviceContainerWidget-inner";
         this.$element.appendChild(this.$inner);
+
+        this.$info = document.createElement("div");
+        this.$info.className = "deviceContainerWidget-info";
+        //this.$element.appendChild(this.$info);
 
         this.devices = [];
     }
@@ -884,6 +990,12 @@ class DeviceContainerWidget {
     appendDevice(d) {
         this.devices.push(d);
         this.$inner.appendChild(d.$element);
+
+        var $b = document.createElement("button");
+        $b.className = "deviceContainerWidget-reset";
+        $b.innerText = "Reset";
+        $b.addEventListener("click", d.reset.bind(d));
+        this.$inner.appendChild($b);
     }
 
     clear() {
