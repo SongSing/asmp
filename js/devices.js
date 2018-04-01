@@ -164,3 +164,61 @@ class IO_Screen extends IODevice {
         }
     }
 }
+
+class IO_TouchPad extends IODevice {
+    constructor (processor) {
+        super(processor);
+
+        this.$element = document.createElement("div");
+        this.$element.className = "touchpad";
+        
+        this.$inner = document.createElement("div");
+        this.$inner.className = "touchpad-inner";
+        this.$inner.addEventListener("mouseDown", this.onDown.bind(this));
+        this.$inner.addEventListener("mouseUp", this.onUp.bind(this));
+        this.$element.appendChild(this.$inner);
+
+        this._interruptByte = new int8(0b11001111);
+
+        this.reset();
+    }
+
+    reset() {
+        this.active = false;
+    }
+
+    sendByte(byte) {
+        byte = coerceInt(byte);
+        if (byte) {
+            this.onDown();
+        } else {
+            this.onUp();
+        }
+    }
+
+    requestByte() {
+        if (this.active) {
+            return new int8(1);
+        } else {
+            return new int8(0);
+        }
+    }
+
+    onDown() {
+        this.active = true;
+        this.$inner.classList.add("touchpad-inner-active");
+        this.pendingInterrupt = true;
+    }
+
+    onUp() {
+        this.active = false;
+        this.$inner.classList.remove("touchpad-inner-active");
+        this._interruptByte = this.requestByte();
+        this.pendingInterrupt = true;
+    }
+
+    get interruptByte() {
+        this.pendingInterrupt = false;
+        return this._interruptByte;
+    }
+}

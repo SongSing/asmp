@@ -2895,7 +2895,7 @@ class Assembler {
         };
 
         var assembledLength = 0;
-        var lines = str.replace(/\r/g, "").split("\n");
+        var lines = str.replace(/\r/g, "").replace(/\t/g, " ").split("\n");
         var addr = new int16(0x0000);
 
         var ended = false;
@@ -3002,11 +3002,12 @@ class Assembler {
     assembleLine(str, addr, label, macroPass, labelPass) {
         // return { error: null | errorStr, addr: new mem address to continue asm from }
         // label: opcode args comment
-        str = str.trim();
 
         if (str === "") {
             return { error: null };
         }
+
+        str = str.trim();
 
         var firstWord = str.split(" ")[0];
 
