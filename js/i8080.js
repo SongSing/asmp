@@ -1323,7 +1323,7 @@ class i8080 {
                     }
                     case 0b111: { // rst
                         var exp = (byte.value & 0b00111000) >> 3;
-                        this.registers.PC.value = (exp << 3) - 1;
+                        this.registers.PC.value = exp - 1;
                         return dret;
                     }
                 }
