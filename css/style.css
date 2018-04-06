@@ -460,12 +460,21 @@ code, .ref-usage {
 #panelWidget-1 {
   width:64px;
   background: #111;
+  overflow:hidden;
+}
+
+#panelWidget-1 > #buttonContainer {
+  width:81px;
+  height:100%;
+  overflow-y:scroll;
 }
 
 #panelWidget-2 {
-  width:300px;
+  width:315px;
   display:flex;
   flex-flow:column;
+  overflow-y:auto;
+  overflow-x:hidden;
 }
 
 #panelWidget-2 > * {
@@ -477,7 +486,7 @@ code, .ref-usage {
 }
 
 #panelWidget-4 {
-  width:calc(100% - 864px);
+  width:calc(100% - 864px - 15px);
   display:flex;
   flex-flow:column;
 }
@@ -597,9 +606,10 @@ code, .ref-usage {
   height:200px;
   overflow-y:auto;
   flex:1 1 auto !important;
+  min-height:200px;
 }
 
-.stackWidget-header, .memoryWidget-header, .registerContainer-header {
+.stackWidget-header, .memoryWidget-header, .registerContainer-header, .statusWidget-header {
   position:relative;
   left:0;
   top:0;
@@ -611,6 +621,12 @@ code, .ref-usage {
   padding-left:8px;
   box-sizing:border-box;
   font-size:16px;
+}
+
+.statusWidget-inner {
+  position:relative;
+  background:#eee;
+  padding:4px;
 }
 
 .stackWidget-inner {

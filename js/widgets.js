@@ -1031,3 +1031,44 @@ class PanelWidget {
         this.$element.appendChild(widget.$element);
     }
 }
+
+class StatusWidget {
+    constructor(register) {
+        this.register = register;
+
+        this.$element = document.createElement("div");
+        this.$element.className = "statusWidget";
+        
+        this.$header = document.createElement("div");
+        this.$header.className = "statusWidget-header";
+        this.$header.innerText = "Status Flags";
+        this.$element.appendChild(this.$header);
+
+        this.$inner = document.createElement("div");
+        this.$inner.className = "statusWidget-inner";
+        this.$inner.innerText = "(None)";
+        this.$element.appendChild(this.$inner);
+    }
+
+    update() {
+        var t = [];
+        
+        if (this.register.value & i8080.flagMasks.carry) {
+            t.push("Carry");
+        }
+        if (this.register.value & i8080.flagMasks.auxCarry) {
+            t.push("Auxiliary Carry");
+        }
+        if (this.register.value & i8080.flagMasks.sign) {
+            t.push("Sign");
+        }
+        if (this.register.value & i8080.flagMasks.parity) {
+            t.push("Parity");
+        }
+        if (this.register.value & i8080.flagMasks.zero) {
+            t.push("Zero");
+        }
+
+        this.$inner.innerText = t.join(", ") || "(None)";
+    }
+}
