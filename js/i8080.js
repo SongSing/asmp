@@ -769,25 +769,40 @@ class i8080 {
         return ret;
     }
 
-    execute() {
+    execute(cb) {
         this.registers.PC.value = 0;
         var finalValue = 0;
+        this.running = true;
+        var timer;
 
-        while (this.registers.PC.value < this.programLength) {
+        var f = (function() {
+            if (this.registers.PC.value >= this.programLength) {
+                this.running = false;
+                clearInterval(timer);
+                cb({
+                    error: null,
+                    finalValue: finalValue
+                });
+                return;
+            }
+
             finalValue = this.registers.PC.value;
             var z = this.step();
             if (z.error) {
                 return { error: z.error };
             }
             if (z.end) {
-                break;
+                this.running = false;
+                clearInterval(timer);
+                cb({
+                    error: null,
+                    finalValue: finalValue
+                });
+                return;
             }
-        }
+        }).bind(this);
 
-        return {
-            error: null,
-            finalValue: finalValue
-        };
+        timer = setInterval(f, 1);
     }
 
     step() {
@@ -812,15 +827,16 @@ class i8080 {
                 };
             }
 
-            if (z.halt) {
-                this.stopped = true;
-            }
-
             if (z.hasOwnProperty("enableInterrupts")) {
+                console.log(this.memory.getByte(this.registers.PC.value).value, z.enableInterrupts);
                 this.interruptsEnabled = z.enableInterrupts;
             }
 
-            this.registers.PC.value++;
+            if (z.halt) {
+                this.stopped = true;
+            } else {
+                this.registers.PC.value++;
+            }
         }
 
         if (this.interruptsEnabled) {
@@ -828,7 +844,9 @@ class i8080 {
                 if (this.ioDevices[i].pendingInterrupt) {
                     // will have one instruction //
                     this.interruptsEnabled = false;
-                    var z = this.processByte(this.ioDevices[i].interruptByte);
+                    this.stopped = false;
+                    var byte = this.ioDevices[i].interruptByte;
+                    var z = this.processByte(byte, true);
                     if (z.error) {
                         return {
                             error: z.error
@@ -840,8 +858,6 @@ class i8080 {
                             end: true
                         };
                     }
-
-                    this.stopped = false;
 
                     if (z.halt) {
                         this.stopped = true;
@@ -863,7 +879,9 @@ class i8080 {
         };
     }
 
-    processByte(byte) {
+    processByte(byte, retainPC) {
+        if (retainPC === undefined) retainPC = false;
+        
         byte = new int8(byte);
         var dret = {
             error: null
@@ -1250,12 +1268,12 @@ class i8080 {
                                 }
                                 return dret;
                             }
-                            case 0b11: { // flip flop
-                                if (byte.getBit(3) === 1) { // enable
+                            case 0b11: { // flip flop ie 
+                                if (byte.getBit(3) === 1) { // enable ie
                                     return {
                                         enableInterrupts: true
                                     };
-                                } else {
+                                } else { // de
                                     return {
                                         enableInterrupts: false
                                     };
@@ -1323,7 +1341,7 @@ class i8080 {
                     }
                     case 0b111: { // rst
                         var exp = (byte.value & 0b00111000) >> 3;
-                        this.registers.PC.value = (exp << 3) - 1;
+                        this.registers.PC.value = exp - 1;
                         return dret;
                     }
                 }

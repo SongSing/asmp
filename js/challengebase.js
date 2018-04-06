@@ -82,7 +82,7 @@ class Challenge {
         diffWidget.appendRegisterObject("Your Registers", processor.matchRegisters(expectedBlob.registers));
     }
 
-    runTest(processor) {
+    runTest(processor, cb) {
         processor.clear(true);
         doAssemble(true);
         var plength = processor.programLength;
@@ -90,69 +90,74 @@ class Challenge {
 
         var time = [0,0,0,0,0];
 
-        for (var i = 0; i < this.tests; i++) {
-            time[0] -= Date.now();
+        var i = 0;
+
+        var success = false;
+
+        var test = (function(cb2) {
             processor.clear(true);
-            time[0] += Date.now();
-            time[1] -= Date.now();
             processor.memory.array = array_copy(memCache);
             processor.programLength = plength;
-            time[1] += Date.now();
-            time[2] -= Date.now();
             this.setupFn(processor, i);
-            time[2] += Date.now();
-
-            time[3] -= Date.now();
             var oldBlob = processor.toBlob();
-            time[3] += Date.now();
-            time[4] -= Date.now();
-            var z = processor.execute();
-            time[4] += Date.now();
 
-            if (z.error) {
-                return {
-                    error: z.error
-                };
-            }
+            var after = (function(z) {
+                if (z.error) {
+                    return {
+                        error: z.error
+                    };
+                }
+    
+                var newBlob = processor.toBlob();
+    
+                success = this.testFn(oldBlob, newBlob);
+    
+                if (!success) {
+                    cb({
+                        success: false,
+                        oldBlob: oldBlob,
+                        newBlob: newBlob
+                    });
+                }
 
-            var newBlob = processor.toBlob();
+                cb2();
+            }).bind(this);
 
-            let success = this.testFn(oldBlob, newBlob);
+            processor.execute(after);
+        }).bind(this);
 
-            if (!success) {
-                return {
-                    success: false,
-                    oldBlob: oldBlob,
-                    newBlob: newBlob
-                };
-            }
-        }
+        var timer = setInterval((function() {
+            test((function() {
+                if (!success) {
+                    clearInterval(timer);
+                }
 
-        console.log(time);
-        console.log("Total time: " + (time.reduce((acc, val) => acc + val) / 1000) + "s");
+                if (++i === this.tests) {
+                    clearInterval(timer);
 
-        // success ! //
+                    if (!challengeStatusObject.unlocked) {
+                        challengeStatusObject.unlocked = [];
+                    }
 
-        if (!challengeStatusObject.unlocked) {
-            challengeStatusObject.unlocked = [];
-        }
+                    for (var i_ = 0; i_ < this.unlocks.length; i_++) {
+                        let unlock = this.unlocks[i_];
+                        if (challengeStatusObject.unlocked.indexOf(unlock) === -1) {
+                            challengeStatusObject.unlocked.push(unlock);
+                        }
+                    }
 
-        for (var i = 0; i < this.unlocks.length; i++) {
-            let unlock = this.unlocks[i];
-            if (challengeStatusObject.unlocked.indexOf(unlock) === -1) {
-                challengeStatusObject.unlocked.push(unlock);
-            }
-        }
+                    Storage.set("challengeStatus", challengeStatusObject);
 
-        Storage.set("challengeStatus", challengeStatusObject);
+                    var currentPage = widgets.challengeListContainer.currentPage;
+                    populateChallengeContainer();
+                    widgets.challengeListContainer.switchToPage(currentPage);
 
-        var currentPage = widgets.challengeListContainer.currentPage;
-        populateChallengeContainer();
-        widgets.challengeListContainer.switchToPage(currentPage);
-
-        return {
-            success: true
-        };
+                    cb({
+                        success: true
+                    });
+                }
+            }).bind(this));
+        }).bind(this), 1);
     }
 
     static elementInvoke() {

@@ -170,12 +170,12 @@ class IO_TouchPad extends IODevice {
         super(processor);
 
         this.$element = document.createElement("div");
-        this.$element.className = "touchpad";
+        this.$element.className = "touchpad device";
         
         this.$inner = document.createElement("div");
         this.$inner.className = "touchpad-inner";
-        this.$inner.addEventListener("mouseDown", this.onDown.bind(this));
-        this.$inner.addEventListener("mouseUp", this.onUp.bind(this));
+        this.$inner.addEventListener("mousedown", this.onDown.bind(this));
+        this.$inner.addEventListener("mouseup", this.onUp.bind(this));
         this.$element.appendChild(this.$inner);
 
         this._interruptByte = new int8(0b11001111);
@@ -220,5 +220,49 @@ class IO_TouchPad extends IODevice {
     get interruptByte() {
         this.pendingInterrupt = false;
         return this._interruptByte;
+    }
+}
+
+class IO_Light extends IODevice {
+    constructor(processor) {
+        super(processor);
+
+        this.$element = document.createElement("div");
+        this.$element.className = "device io-light";
+        
+        this.$inner = document.createElement("div");
+        this.$inner.className = "io-light-inner";
+        this.$element.appendChild(this.$inner);
+
+        this.on = false;
+    }
+
+    reset() {
+        this.turnOff();
+    }
+
+    sendByte(byte) {
+        byte = coerceInt(byte);
+        if (byte === 0) {
+            this.turnOff();
+        } else {
+            this.turnOn();
+        }
+    }
+
+    requestByte() {
+        return new int8(this.on);
+    }
+
+    turnOn() {
+        this.on = true;
+        this.$inner.classList.add("io-light-on");
+        this.$inner.classList.remove("io-light-off");
+    }
+
+    turnOff() {
+        this.on = false;
+        this.$inner.classList.add("io-light-off");
+        this.$inner.classList.remove("io-light-on");
     }
 }

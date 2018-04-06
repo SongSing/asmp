@@ -82,7 +82,7 @@ class Challenge {
         diffWidget.appendRegisterObject("Your Registers", processor.matchRegisters(expectedBlob.registers));
     }
 
-    runTest(processor) {
+    runTest(processor, cb) {
         processor.clear(true);
         doAssemble(true);
         var plength = processor.programLength;
@@ -90,69 +90,74 @@ class Challenge {
 
         var time = [0,0,0,0,0];
 
-        for (var i = 0; i < this.tests; i++) {
-            time[0] -= Date.now();
+        var i = 0;
+
+        var success = false;
+
+        var test = (function(cb2) {
             processor.clear(true);
-            time[0] += Date.now();
-            time[1] -= Date.now();
             processor.memory.array = array_copy(memCache);
             processor.programLength = plength;
-            time[1] += Date.now();
-            time[2] -= Date.now();
             this.setupFn(processor, i);
-            time[2] += Date.now();
-
-            time[3] -= Date.now();
             var oldBlob = processor.toBlob();
-            time[3] += Date.now();
-            time[4] -= Date.now();
-            var z = processor.execute();
-            time[4] += Date.now();
 
-            if (z.error) {
-                return {
-                    error: z.error
-                };
-            }
+            var after = (function(z) {
+                if (z.error) {
+                    return {
+                        error: z.error
+                    };
+                }
+    
+                var newBlob = processor.toBlob();
+    
+                success = this.testFn(oldBlob, newBlob);
+    
+                if (!success) {
+                    cb({
+                        success: false,
+                        oldBlob: oldBlob,
+                        newBlob: newBlob
+                    });
+                }
 
-            var newBlob = processor.toBlob();
+                cb2();
+            }).bind(this);
 
-            let success = this.testFn(oldBlob, newBlob);
+            processor.execute(after);
+        }).bind(this);
 
-            if (!success) {
-                return {
-                    success: false,
-                    oldBlob: oldBlob,
-                    newBlob: newBlob
-                };
-            }
-        }
+        var timer = setInterval((function() {
+            test((function() {
+                if (!success) {
+                    clearInterval(timer);
+                }
 
-        console.log(time);
-        console.log("Total time: " + (time.reduce((acc, val) => acc + val) / 1000) + "s");
+                if (++i === this.tests) {
+                    clearInterval(timer);
 
-        // success ! //
+                    if (!challengeStatusObject.unlocked) {
+                        challengeStatusObject.unlocked = [];
+                    }
 
-        if (!challengeStatusObject.unlocked) {
-            challengeStatusObject.unlocked = [];
-        }
+                    for (var i_ = 0; i_ < this.unlocks.length; i_++) {
+                        let unlock = this.unlocks[i_];
+                        if (challengeStatusObject.unlocked.indexOf(unlock) === -1) {
+                            challengeStatusObject.unlocked.push(unlock);
+                        }
+                    }
 
-        for (var i = 0; i < this.unlocks.length; i++) {
-            let unlock = this.unlocks[i];
-            if (challengeStatusObject.unlocked.indexOf(unlock) === -1) {
-                challengeStatusObject.unlocked.push(unlock);
-            }
-        }
+                    Storage.set("challengeStatus", challengeStatusObject);
 
-        Storage.set("challengeStatus", challengeStatusObject);
+                    var currentPage = widgets.challengeListContainer.currentPage;
+                    populateChallengeContainer();
+                    widgets.challengeListContainer.switchToPage(currentPage);
 
-        var currentPage = widgets.challengeListContainer.currentPage;
-        populateChallengeContainer();
-        widgets.challengeListContainer.switchToPage(currentPage);
-
-        return {
-            success: true
-        };
+                    cb({
+                        success: true
+                    });
+                }
+            }).bind(this));
+        }).bind(this), 1);
     }
 
     static elementInvoke() {
@@ -257,20 +262,20 @@ var challenges = [new Challenge("tutorial","Tutorial","bootcamp","Add 5 to the v
     setDevice(d);
     processor.setDevice(0, d);
 },function(processor, i) {
-    currentDevice.reset();
+    currentDevices[0].reset();
 },function(oldBlob, newBlob) {
-    return currentDevice.lastReceived && currentDevice.lastReceived.value === (currentDevice.bytesToSend.reduce((l, r) => l.value + r.value) & 0xff);
+    return currentDevices[0].lastReceived && currentDevices[0].lastReceived.value === (currentDevices[0].bytesToSend.reduce((l, r) => l.value + r.value) & 0xff);
 },function(oldBlob) {
     return {
-        sum: currentDevice.bytesToSend.reduce((l, r) => l.value + r.value)
+        sum: currentDevices[0].bytesToSend.reduce((l, r) => l.value + r.value)
     };
 },function(diffWidget, oldBlob, expectedBlob) {
     var d = new IO_SumRequester(processor);
-    d.$inner.innerText = currentDevice.bytesToSend.map(i8 => i8.toDecString()).join(" ");
+    d.$inner.innerText = currentDevices[0].bytesToSend.map(i8 => i8.toDecString()).join(" ");
     d.$sum.innerText = "Sum: " + expectedBlob.sum;
 
     diffWidget.appendWidget("Expected Device", new WrapperWidget(d.$element));
-    diffWidget.appendWidget("Your Device", new WrapperWidget(currentDevice.$element.cloneNode(true)));
+    diffWidget.appendWidget("Your Device", new WrapperWidget(currentDevices[0].$element.cloneNode(true)));
 }),new Challenge("bitwise","Bitwise Operations","bootcamp","Set the value of <b>A</b> to <code><b>A</b> & <b>B</b> | <b>C</b> ^ 255</code>. You can assume all 3 registers will hold random values.<br><br>Like the addition and subtraction instructions, there exist instructions that perform logical bitwise operations AND, OR, and XOR using either an explicit value/expression or a register.<br><br>These operations are as follows:<br><br><table class=\"myAwesomeTable\"><tr><th>Operation</th><th>Immediate Value</th><th>Register Value</th></tr><tr><td>AND</td><td><op>ANI</op></td><td><op>ANA</op></td></tr><tr><td>OR</td><td><op>ORI</op></td><td><op>ORA</op></td></tr><tr><td>XOR</td><td><op>XRI</op></td><td><op>XRA</op></td></tr></table>",["add"],["bitwise"],["A","B","C"],10000,function() {
 
 },function(processor, i) {
@@ -375,9 +380,9 @@ var challenges = [new Challenge("tutorial","Tutorial","bootcamp","Add 5 to the v
     setDevice(d);
     processor.setDevice(0, d);
 },function(processor, i) {
-    currentDevice.reset();
+    currentDevices[0].reset();
 },function(oldBlob, newBlob) {
-    return array_compare(currentDevice.array, [
+    return array_compare(currentDevices[0].array, [
         1, 0, 1, 0, 1, 0, 1, 0, 1,
         0, 1, 0, 1, 0, 1, 0, 1, 0,
         1, 0, 1, 0, 1, 0, 1, 0, 1,
@@ -407,33 +412,33 @@ var challenges = [new Challenge("tutorial","Tutorial","bootcamp","Add 5 to the v
     d.setArray(expectedBlob.array);
 
     diffWidget.appendWidget("Expected Device", new WrapperWidget(d.$element));
-    var $c = currentDevice.$element.cloneNode(true);
-    $c.childNodes[0].getContext("2d").drawImage(currentDevice.$canvas, 0, 0);
+    var $c = currentDevices[0].$element.cloneNode(true);
+    $c.childNodes[0].getContext("2d").drawImage(currentDevices[0].$canvas, 0, 0);
     diffWidget.appendWidget("Your Device", new WrapperWidget($c));
 }),new Challenge("screenReverse","Screen - Mirror","devices","Mirror the screen horizontally. The screen is device 0.<br><br>In addition to writing pixels to the screen, you may read pixels. This can be done by sending the screen the index on which to operate, then using the <op>in</op> command to read a byte from the screen. A 0 read from the screen will indicate that the pixel is not turned on, whereas any other value will indicate that the pixel is turned on.<br><br>Requesting a pixel in this fashion will reset the screen's input state in the same way that writing a pixel does, so the next thing you will have to do will always be to select an index.",["screen"],["screenReverse"],["all"],100,function() {
     var d = new IO_Screen(processor, 9, 9);
     setDevice(d);
     processor.setDevice(0, d);
 },function(processor, i) {
-    currentDevice.reset();
+    currentDevices[0].reset();
     var arr = [];
     for (var i = 0; i < 81; i++) {
         arr.push(pick1(0, 1));
     }
 
-    currentDevice.setArray(arr);
-    currentDevice.ogArray = array_copy(arr);
+    currentDevices[0].setArray(arr);
+    currentDevices[0].ogArray = array_copy(arr);
 },function(oldBlob, newBlob) {
-    return array_compare(currentDevice.array, array_mirror_h(array_copy(currentDevice.ogArray), currentDevice.resX));
+    return array_compare(currentDevices[0].array, array_mirror_h(array_copy(currentDevices[0].ogArray), currentDevices[0].resX));
 },function(oldBlob) {
     return {
-        array: array_mirror_h(array_copy(currentDevice.ogArray), currentDevice.resX)
+        array: array_mirror_h(array_copy(currentDevices[0].ogArray), currentDevices[0].resX)
     };
 },function(diffWidget, oldBlob, expectedBlob) {
     var d = new IO_Screen(processor);
     var $c;
 
-    d.setArray(currentDevice.ogArray);
+    d.setArray(currentDevices[0].ogArray);
     $c = d.$element.cloneNode(true);
     $c.childNodes[0].getContext("2d").drawImage(d.$canvas, 0, 0);
     diffWidget.appendWidget("Input Device", new WrapperWidget($c));
@@ -443,9 +448,28 @@ var challenges = [new Challenge("tutorial","Tutorial","bootcamp","Add 5 to the v
     $c.childNodes[0].getContext("2d").drawImage(d.$canvas, 0, 0);
     diffWidget.appendWidget("Expected Device", new WrapperWidget($c));
 
-    $c = currentDevice.$element.cloneNode(true);
-    $c.childNodes[0].getContext("2d").drawImage(currentDevice.$canvas, 0, 0);
+    $c = currentDevices[0].$element.cloneNode(true);
+    $c.childNodes[0].getContext("2d").drawImage(currentDevices[0].$canvas, 0, 0);
     diffWidget.appendWidget("Your Device", new WrapperWidget($c));
+}),new Challenge("interrupts","Interrupts","devices","Flash the light as long as the touchpad is being touched, up to 3 times.<br><br>Interrupts are when a device requests an action to happen immediately - to <i>interrupt</i> the current process. This is useful for something like a touchpad, if you need something to happen as soon as possible after it's pressed.<br><br>Interrupts must be enabled with <op>ei</op>, and will send a single instruction directly to the processor to be processed. This instruction is usually the <op>rst</op> instruction.<br><br>The touchpad will send a <op>rst</op> instruction using address 0008, and can be read from with the <op>in</op> instruction to determine whether it is being pressed (1) or not (0).<br><br>The light will be turned on/off by sending it a byte with <op>out</op>, with 0 indicating off, and any other value indicating on.<br><br>Note: Interrupts will disable further interrupts by default, so the <op>ei</op> instruction will need to be a part of the interrupt routine.",["iodevices"],["interrupts","touchpad","light"],["all"],5,function() {
+    var d = new IO_TouchPad(processor);
+    setDevice(d);
+    processor.setDevice(0, d);
+
+    d = new IO_Light(processor);
+    setDevice(d);
+    processor.setDevice(1, d);
+},function(processor, i) {
+    currentDevices[0].reset();
+    currentDevices[1].reset();
+},function(oldBlob, newBlob) {
+    // how
+    return false;
+},function(oldBlob) {
+    // how
+    return {};
+},function(diffWidget, oldBlob, expectedBlob) {
+    // how
 })]; // will be built from challenges.cdoc
 
 function populateChallengeContainer() {

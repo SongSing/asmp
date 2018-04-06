@@ -16,7 +16,7 @@ var processor,
     $currentSpotlight,
     spotlightZ,
     reference,
-    currentDevice,
+    currentDevices = [],
     playing = false,
     playTimer;
 
@@ -55,6 +55,7 @@ function init() {
         challengeListContainer: new ChallengeListContainerWidget(),
         deviceContainer: new DeviceContainerWidget(),
         stack: new StackWidget(processor.stack),
+        statusFlags: new StatusWidget(processor.registers.S),
 
         panel1: new PanelWidget(1),
         panel2: new PanelWidget(2),
@@ -121,6 +122,7 @@ function init() {
     widgets.workspaceContainer.appendWidget(widgets.diff);
     widgets.workspaceContainer.appendWidget(widgets.smallReference);
 
+    widgets.panel2.appendWidget(widgets.statusFlags);
     widgets.panel2.appendWidget(widgets.memory);
     widgets.panel2.appendWidget(widgets.memorySeek);
     widgets.panel2.appendWidget(widgets.stack);
@@ -147,7 +149,7 @@ function updateWidgets() {
         }
     }
 
-    if (currentDevice) {
+    if (currentDevices[0]) {
         widgets.deviceContainer.show();
     } else {
         widgets.deviceContainer.hide();
@@ -155,11 +157,10 @@ function updateWidgets() {
 }
 
 function setDevice(d) {
-    widgets.deviceContainer.clear();
     widgets.deviceContainer.appendDevice(d);
     widgets.deviceContainer.show();
 
-    currentDevice = d;
+    currentDevices.push(d);
 }
 
 function saveSolution() {
@@ -326,21 +327,20 @@ function doRun() {
         return { error: a.error };
     }
 
-    var x = processor.execute();
-    var ret = {};
+    var after = (function(x) {
+        if (x.error) {
+            widgets.console.error(x.error);
+        } else {
+            widgets.console.print("Done.");
+        }
+    
+        var temp = processor.registers.PC.value;
+        processor.registers.PC.value = x.finalValue;
+        updateWidgets();
+        processor.registers.PC.value = temp;
+    }).bind(this);
 
-    if (x.error) {
-        widgets.console.error(x.error);
-        ret.error = x.error;
-    } else {
-        widgets.console.print("Done.");
-    }
-
-    var temp = processor.registers.PC.value;
-    processor.registers.PC.value = x.finalValue;
-    updateWidgets();
-    processor.registers.PC.value = temp;
-    return ret;
+    processor.execute(after);
 }
 
 function showDiff(oldBlob, expectedBlob) {
@@ -360,23 +360,26 @@ function doTest() {
     updateWidgets();
 
     setTimeout(() => {
-        var z = currentChallenge.runTest(processor);
-        if (z.success) {
-            widgets.console.print("Test PASSED!");
-            challengeStatusObject[currentChallenge.name].success = true;
-            Storage.set("challengeStatus", challengeStatusObject);
-            widgets.find("#challenge-" + currentChallenge.name, true).className += " complete";
-            // TODO: like a popup or smth...
-        } else {
-            var $s = document.createElement("span");
-            $s.className = "consoleLink";
-            $s.innerText = "View Diff";
-            $s.addEventListener("click", () => { showDiff(z.oldBlob, currentChallenge.getExpectedFn(z.oldBlob)); });
-            widgets.console.print("Test FAILED: ");
-            widgets.console.$element.appendChild($s);
-        }
+        var after = (function(z) {
+            if (z.success) {
+                widgets.console.print("Test PASSED!");
+                challengeStatusObject[currentChallenge.name].success = true;
+                Storage.set("challengeStatus", challengeStatusObject);
+                widgets.find("#challenge-" + currentChallenge.name, true).className += " complete";
+                // TODO: like a popup or smth...
+            } else {
+                var $s = document.createElement("span");
+                $s.className = "consoleLink";
+                $s.innerText = "View Diff";
+                $s.addEventListener("click", () => { showDiff(z.oldBlob, currentChallenge.getExpectedFn(z.oldBlob)); });
+                widgets.console.print("Test FAILED: ");
+                widgets.console.$element.appendChild($s);
+            }
 
-        updateWidgets();
+            updateWidgets();
+        }).bind(this);
+
+        currentChallenge.runTest(processor, after);
     }, 200);
 }
 
@@ -406,7 +409,9 @@ function doGoBack() {
     widgets.workspaceContainer.hide();
     widgets.challengeListContainer.show();
     array_clear(processor.ioDevices);
-    currentDevice = null;
+    array_clear(currentDevices);
+    widgets.deviceContainer.clear();
+    widgets.deviceContainer.hide();
     processor.reset();
 }
 
@@ -511,7 +516,7 @@ function test() {
 }
 
 function array_clear(array) {
-    array = [];
+    array.length = 0;
 }
 
 function array_compare(arr1, arr2) {
