@@ -55,6 +55,7 @@ function init() {
         challengeListContainer: new ChallengeListContainerWidget(),
         deviceContainer: new DeviceContainerWidget(),
         stack: new StackWidget(processor.stack),
+        statusFlags: new StatusWidget(processor.registers.S),
 
         panel1: new PanelWidget(1),
         panel2: new PanelWidget(2),
@@ -123,6 +124,7 @@ function init() {
 
     widgets.panel2.appendWidget(widgets.memory);
     widgets.panel2.appendWidget(widgets.memorySeek);
+    widgets.panel2.appendWidget(widgets.statusFlags);
     widgets.panel2.appendWidget(widgets.stack);
     widgets.panel4.appendWidget(widgets.deviceContainer);
     widgets.panel4.appendWidget(widgets.console);
