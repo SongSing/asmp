@@ -459,7 +459,7 @@ var challenges = [new Challenge("sandbox","Sandbox","bootcamp",":)",[],["sandbox
 },function(processor, i) {
     processor.registers.A.value = int8.random().value;
 },function(oldBlob, newBlob) {
-    return Math.sqrt(oldBlob.registers.A.value) === newBlob.registers.A.value;
+    return ~~Math.sqrt(oldBlob.registers.A.value) === newBlob.registers.A.value;
 },function(oldBlob) {
     return {
         registers: {

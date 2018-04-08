@@ -271,6 +271,7 @@ function endTutorial() {
 }
 
 function doAssemble(silent) {
+    saveSolution();
     if (silent === undefined) silent = false;
     if (!silent) widgets.console.clear();
     processor.reset();
