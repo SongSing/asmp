@@ -10,6 +10,11 @@ function hideElement__($e) {
     }
 
     $e._display = getComputedStyle($e).display;
+
+    if (getComputedStyle($e).display === "") {
+        $e._display = "block";
+    }
+
     $e.style.display = "none";
 }
 
