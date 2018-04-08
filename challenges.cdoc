@@ -679,7 +679,7 @@ Requesting a pixel in this fashion will reset the screen's input state in the sa
     processor.registers.A.value = int8.random().value;
 }
 `test: function(oldBlob, newBlob) {
-    return Math.sqrt(oldBlob.registers.A.value) === newBlob.registers.A.value;
+    return ~~Math.sqrt(oldBlob.registers.A.value) === newBlob.registers.A.value;
 }
 `getExpected: function(oldBlob) {
     return {
