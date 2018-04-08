@@ -557,3 +557,12 @@ function array_mirror_h(arr, w) {
 function pick1(...args) {
     return args[~~(Math.random() * args.length)];
 }
+
+function randomInt(minInclusive, maxExclusive) {
+    if (maxExclusive === undefined) {
+        maxExclusive = minInclusive;
+        minInclusive = 0;
+    }
+
+    return parseInt(Math.random() * (maxExclusive - minInclusive) + minInclusive);
+}

@@ -167,7 +167,15 @@ class Challenge {
     }
 }
 
-var challenges = [new Challenge("tutorial","Tutorial","bootcamp","Add 5 to the value of <b>A</b>.<br><br>Instructions in assembly follow the following format:<br><br><code>label: instruction arg1,arg2</code><br><br>where <code>label</code> is an optional label referring to the memory address of the instruction (not needed here),<br>and <code>instruction</code> is the \"function\" being called, both being case-insensitive. Notice that there are no tokens for ending statements such as semicolons; Instructions only take up one line, and are run line-by-line<br><br>Some instructions require parameters, which may be numbers, expressions, or register references, depending on the instruction.<br><br>To complete this challenge, use the instruction <op>adi</op> <--(click to see usage).<br><br>When you think you've found the solution, click <b>Test</b>.",[],["tutorial","adi"],["A"],256,function() {
+var challenges = [new Challenge("sandbox","Sandbox","bootcamp",":)",[],["sandbox"],["all"],1,function() {
+
+},function(processor, i) {
+
+},function(oldBlob, newBlob) {
+    return true;
+},function(oldBlob) {
+
+},function() {}),new Challenge("tutorial","Tutorial","bootcamp","Add 5 to the value of <b>A</b>.<br><br>Instructions in assembly follow the following format:<br><br><code>label: instruction arg1,arg2</code><br><br>where <code>label</code> is an optional label referring to the memory address of the instruction (not needed here),<br>and <code>instruction</code> is the \"function\" being called, both being case-insensitive. Notice that there are no tokens for ending statements such as semicolons; Instructions only take up one line, and are run line-by-line<br><br>Some instructions require parameters, which may be numbers, expressions, or register references, depending on the instruction.<br><br>To complete this challenge, use the instruction <op>adi</op> <--(click to see usage).<br><br>When you think you've found the solution, click <b>Test</b>.",[],["tutorial","adi"],["A"],256,function() {
     doTutorial();
 },function(processor, i) {
     processor.registers.A.value = i;
@@ -446,7 +454,19 @@ var challenges = [new Challenge("tutorial","Tutorial","bootcamp","Add 5 to the v
     $c = currentDevice.$element.cloneNode(true);
     $c.childNodes[0].getContext("2d").drawImage(currentDevice.$canvas, 0, 0);
     diffWidget.appendWidget("Your Device", new WrapperWidget($c));
-})]; // will be built from challenges.cdoc
+}),new Challenge("sqrt","Square Root","math","Set the value of <b>A</b> to the square root of itself (rounded down). You may assume that <b>A</b> will hold a random value.",["addsub"],["sqrt"],["all"],1000,function() {
+
+},function(processor, i) {
+    processor.registers.A.value = int8.random().value;
+},function(oldBlob, newBlob) {
+    return Math.sqrt(oldBlob.registers.A.value) === newBlob.registers.A.value;
+},function(oldBlob) {
+    return {
+        registers: {
+            A: new int8(Math.sqrt(oldBlob.registers.A.value))
+        }
+    };
+},Challenge.regDiff)]; // will be built from challenges.cdoc
 
 function populateChallengeContainer() {
     widgets.challengeListContainer.clear();
