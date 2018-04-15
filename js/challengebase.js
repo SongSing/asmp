@@ -87,6 +87,7 @@ class Challenge {
         doAssemble(true);
         var plength = processor.programLength;
         var memCache = array_copy(processor.memory.array);
+        var avgSteps = 0;
 
         var time = [0,0,0,0,0];
 
@@ -126,7 +127,12 @@ class Challenge {
                     newBlob: newBlob
                 };
             }
+
+            avgSteps += z.steps;
         }
+
+        avgSteps /= this.tests;
+        var totalTime = (time.reduce((acc, val) => acc + val) / 1000);
 
         console.log(time);
         console.log("Total time: " + (time.reduce((acc, val) => acc + val) / 1000) + "s");
@@ -151,7 +157,13 @@ class Challenge {
         widgets.challengeListContainer.switchToPage(currentPage);
 
         return {
-            success: true
+            success: true,
+            stats: {
+                "Tests Conducted": this.tests,
+                "Total Test Time": totalTime + "s",
+                "Average Test Time": (totalTime / this.tests) + "s",
+                "Average Steps": avgSteps
+            }
         };
     }
 

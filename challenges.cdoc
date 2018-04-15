@@ -690,3 +690,58 @@ Requesting a pixel in this fashion will reset the screen's input state in the sa
 }
 `diff: Challenge.regDiff
 ```
+`name: gcd
+`title: GCD
+`category: math
+`requires: addsub
+`unlocks: gcd
+`tests: 1000
+`registers: all
+`desc: Set the value of <b>A</b> to the Greatest Common Denominator (GCD) of the values of <b>B</b> and <b>C</b>.
+
+The GCD is the largest number that evenly divides the two numbers (e.g. 2 is the greatest number that evenly goes into 4 and 6, so 2 is the GCD of 4 and 6.)
+`invoke: function() {
+
+}
+`setup: function(processor, i) {
+    processor.registers.B.value = int8.random().value;
+    processor.registers.C.value = int8.random().value;
+}
+`test: function(oldBlob, newBlob) {
+    return gcd(oldBlob.registers.B.value, oldBlob.registers.C.value) === newBlob.registers.A.value;
+}
+`getExpected: function(oldBlob) {
+    return {
+        registers: {
+            A: new int8(gcd(oldBlob.registers.B.value, oldBlob.registers.C.value))
+        }
+    };
+}
+`diff: Challenge.regDiff
+```
+`name: prime
+`title: Prime Test
+`category: math
+`requires: addsub,regpair
+`unlocks: prime
+`tests: 65536
+`registers: all
+`desc: Set the value of <b>A</b> to <code>1</code> if the value stored in <b>BC</b> is prime. Set the value of <b>A</b> to <code>0</code> otherwise.
+`invoke: function() {
+
+}
+`setup: function(processor, i) {
+    processor.registers.BC.value = i;
+}
+`test: function(oldBlob, newBlob) {
+    return newBlob.registers.A.value === +isPrime(oldBlob.registers.BC.value);
+}
+`getExpected: function(oldBlob) {
+    return {
+        registers: {
+            A: new int8(isPrime(oldBlob.registers.BC.value))
+        }
+    };
+}
+`diff: Challenge.regDiff
+```

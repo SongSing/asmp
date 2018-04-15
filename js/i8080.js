@@ -10,7 +10,7 @@ function coerceInt(x) {
         case "number":    return ~~x;
         case "string":    return ~~x;
         case "object":    return x.value;
-        default:          return parseInt(x);
+        default:          return +x;
     }
 }
 
@@ -772,10 +772,12 @@ class i8080 {
     execute() {
         this.registers.PC.value = 0;
         var finalValue = 0;
+        var steps = 0;
 
         while (this.registers.PC.value < this.programLength) {
             finalValue = this.registers.PC.value;
             var z = this.step();
+            steps++;
             if (z.error) {
                 return { error: z.error };
             }
@@ -786,7 +788,8 @@ class i8080 {
 
         return {
             error: null,
-            finalValue: finalValue
+            finalValue: finalValue,
+            steps: steps
         };
     }
 
@@ -1265,7 +1268,7 @@ class i8080 {
                         }
                         return dret;
                     }
-                    case 0b100: { // calls
+                    case 0b100: { // calls-
                         var op = (byte.value & 0b00111000) >> 3;
                         this.registers.PC.value++;
                         var addr = this.memory.getWord(this.registers.PC.value);

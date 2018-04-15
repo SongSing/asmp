@@ -3,6 +3,7 @@ body, html {
   margin:0;
   font-family: Courier New, monospace;
   background-size:cover;
+  overflow:hidden;
 }
 
 code, .ref-usage {
@@ -34,6 +35,7 @@ code, .ref-usage {
   background:rgba(51,170,255,0.4);
   
   background-color:rgba(0,0,0,0.8);
+  overflow: hidden;
 }
 
 .myAwesomeTable {
@@ -140,7 +142,7 @@ code, .ref-usage {
   border: 1px solid #aaa;
 }
 
-.tutorialButtonContainer {
+.tutorialButtonContainer, .diffWidget-buttons > button {
   color:#5599CC;
   font-size:18px;
   text-align:right;
@@ -148,6 +150,7 @@ code, .ref-usage {
   margin-right:8px;
   font-family:sans-serif;
   font-weight:bold;
+  cursor:pointer;
 }
 
 .tutorialNext {
@@ -157,7 +160,6 @@ code, .ref-usage {
 .tutorialSkip {
   color:#CC5555;
   float:left;
-  cursor:pointer;
 }
 
 .refs-small-container {
@@ -358,6 +360,26 @@ code, .ref-usage {
   position:relative !important;
 }
 
+.diffWidget-header {
+  font-size: 32px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.diffWidget-buttons-challenges {
+  float: right;
+}
+
+.diffWidget-buttons-back {
+  float: left;
+}
+
+.diffWidget-buttons > button {
+  background:transparent;
+  border:0;
+  color:#5599CC;
+}
+
 .ref-focused {
   border-color:gold;
   background:#FFFFDD;
@@ -369,12 +391,13 @@ code, .ref-usage {
 .diffWidget-itemsContainer {
   position:absolute;
   left:50%;
-  top:40%;
+  top:50%;
   transform:translate(-50% ,-50%);
   background:white;
   white-space:nowrap;
   border:4px solid white;
   border-radius:9px;
+  padding:4px;
 }
 
 .diffWidget-itemContainer {
@@ -449,6 +472,7 @@ code, .ref-usage {
   top:0;
   height:100%;
   width:100%;
+  overflow: hidden;
 }
 
 .panelWidget {
@@ -798,7 +822,7 @@ code, .ref-usage {
 }
 
 .registerContainer {
-  width:256px;
+  width:300px;
   border:6px solid #25A;
   border-radius:7px;
   box-sizing:border-box;

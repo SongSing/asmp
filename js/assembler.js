@@ -2054,7 +2054,7 @@ class Assembler {
                 }).bind(this)
             },
 
-            CZ: {
+            CNZ: {
                 assemble: (function(addr, label, args) {
                     // 3 bytes
                     var byte = new int8(0b11000100 | (0b000 << 3));

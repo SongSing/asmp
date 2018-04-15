@@ -595,6 +595,34 @@ class DiffWidget {
         });
         this.$element.appendChild(this.$container);
 
+        this.$header = document.createElement("div");
+        this.$header.className = "diffWidget-header";
+        this.$container.appendChild(this.$header);
+
+        this.$diff = document.createElement("div");
+        this.$diff.className = "diffWidget-diff";
+        this.$container.appendChild(this.$diff);
+
+        this.$stats = document.createElement("div");
+        this.$stats.className = "diffWidget-stats";
+        this.$container.appendChild(this.$stats);
+        
+        this.$buttons = document.createElement("div");
+        this.$buttons.className = "diffWidget-buttons";
+        this.$container.appendChild(this.$buttons);
+
+        this.$back = document.createElement("button");
+        this.$back.className = "diffWidget-buttons-back";
+        this.$back.addEventListener("click", this.doGoBack.bind(this));
+        this.$back.innerText = "< Back to Editing";
+        this.$buttons.appendChild(this.$back);
+
+        this.$challenges = document.createElement("button");
+        this.$challenges.className = "diffWidget-buttons-challenges";
+        this.$challenges.addEventListener("click", this.doGoChallenges.bind(this));
+        this.$challenges.innerText = "More Challenges >";
+        this.$buttons.appendChild(this.$challenges);
+
         this.$element.addEventListener("click", this.hide.bind(this));
     }
 
@@ -608,7 +636,7 @@ class DiffWidget {
         $c.appendChild($h);
         $c.appendChild(w.$element);
 
-        this.$container.appendChild($c);
+        this.$diff.appendChild($c);
         this.widgets.push(w);
 
         w.update && w.update();
@@ -649,8 +677,27 @@ class DiffWidget {
         }
     }
 
-    show() {
+    show(passed, stats) {
         showElement__(this.$element);
+        if (passed) {
+            this.$header.innerText = "Test PASSED!";
+        } else {
+            this.$header.innerText = "Test FAILED!";
+        }
+
+
+        if (stats) {
+            var frag = document.createDocumentFragment();
+
+            for (var stat in stats) {
+                var name = stat.substr(0, 1).toUpperCase() + stat.substr(1);
+                var $d = document.createElement("div");
+                $d.innerText = name + ": " + stats[stat].toString();
+                frag.appendChild($d);
+            }
+
+            this.$stats.appendChild(frag);
+        }
     }
 
     hide() {
@@ -658,8 +705,18 @@ class DiffWidget {
     }
 
     clear() {
-        this.$container.innerHTML = "";
+        this.$diff.innerHTML = "";
         array_clear(this.widgets);
+        this.$stats.innerHTML = "";
+    }
+
+    doGoBack() {
+        this.hide();
+    }
+
+    doGoChallenges() {
+        this.hide();
+        doGoBack(); // in asmp.js
     }
 }
 

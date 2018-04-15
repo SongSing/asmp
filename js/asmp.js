@@ -346,11 +346,11 @@ function doRun() {
     return ret;
 }
 
-function showDiff(oldBlob, expectedBlob) {
+function showDiff(success, stats, oldBlob, expectedBlob) {
     widgets.diff.clear();
-    currentChallenge.diffFn.call(currentChallenge, widgets.diff, i8080.matchBlobWithArray(oldBlob, currentChallenge.requiredRegs), expectedBlob);
+    success || currentChallenge.diffFn.call(currentChallenge, widgets.diff, i8080.matchBlobWithArray(oldBlob, currentChallenge.requiredRegs), expectedBlob);
     widgets.diff.update();
-    widgets.diff.show();
+    widgets.diff.show(success, stats);
 }
 
 function doTest() {
@@ -364,20 +364,21 @@ function doTest() {
 
     setTimeout(() => {
         var z = currentChallenge.runTest(processor);
+        var sd = () => showDiff(z.success, z.stats, z.success ? null : z.oldBlob, z.success ? null : currentChallenge.getExpectedFn(z.oldBlob));
+        
+        var $s = document.createElement("span");
+        $s.className = "consoleLink";
+        $s.innerText = "Test complete.";
+        $s.addEventListener("click", sd);
+        widgets.console.$element.appendChild($s);
+
         if (z.success) {
-            widgets.console.print("Test PASSED!");
             challengeStatusObject[currentChallenge.name].success = true;
             Storage.set("challengeStatus", challengeStatusObject);
             widgets.find("#challenge-" + currentChallenge.name, true).className += " complete";
-            // TODO: like a popup or smth...
-        } else {
-            var $s = document.createElement("span");
-            $s.className = "consoleLink";
-            $s.innerText = "View Diff";
-            $s.addEventListener("click", () => { showDiff(z.oldBlob, currentChallenge.getExpectedFn(z.oldBlob)); });
-            widgets.console.print("Test FAILED: ");
-            widgets.console.$element.appendChild($s);
         }
+
+        sd();
 
         updateWidgets();
     }, 200);
@@ -568,4 +569,42 @@ function randomInt(minInclusive, maxExclusive) {
     }
 
     return parseInt(Math.random() * (maxExclusive - minInclusive) + minInclusive);
+}
+
+function isPrime(x) {
+    if (x < 2) {
+        return false;
+    } else if (x === 2) {
+        return true;
+    } else if (x % 2 === 0) {
+        return false;
+    }
+
+    var len = ~~Math.sqrt(len) + 1;
+
+    for (var i = 3; i < len; i += 2) {
+        if (x % i === 0) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
+function gcd(x, y) {
+    if (x === 0 || y === 0) {
+        return 0;
+    }
+    
+    if (x > y) {
+        var temp = x;
+        x = y;
+        y = temp;
+    }
+
+    for (var i = x; i > 0; i--) {
+        if (x % i === 0 && y % i === 0) {
+            return i;
+        }
+    }
 }

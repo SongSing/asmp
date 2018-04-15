@@ -87,6 +87,7 @@ class Challenge {
         doAssemble(true);
         var plength = processor.programLength;
         var memCache = array_copy(processor.memory.array);
+        var avgSteps = 0;
 
         var time = [0,0,0,0,0];
 
@@ -126,7 +127,12 @@ class Challenge {
                     newBlob: newBlob
                 };
             }
+
+            avgSteps += z.steps;
         }
+
+        avgSteps /= this.tests;
+        var totalTime = (time.reduce((acc, val) => acc + val) / 1000);
 
         console.log(time);
         console.log("Total time: " + (time.reduce((acc, val) => acc + val) / 1000) + "s");
@@ -151,7 +157,13 @@ class Challenge {
         widgets.challengeListContainer.switchToPage(currentPage);
 
         return {
-            success: true
+            success: true,
+            stats: {
+                "Tests Conducted": this.tests,
+                "Total Test Time": totalTime + "s",
+                "Average Test Time": (totalTime / this.tests) + "s",
+                "Average Steps": avgSteps
+            }
         };
     }
 
@@ -464,6 +476,31 @@ var challenges = [new Challenge("sandbox","Sandbox","bootcamp",":)",[],["sandbox
     return {
         registers: {
             A: new int8(Math.sqrt(oldBlob.registers.A.value))
+        }
+    };
+},Challenge.regDiff),new Challenge("gcd","GCD","math","Set the value of <b>A</b> to the Greatest Common Denominator (GCD) of the values of <b>B</b> and <b>C</b>.<br><br>The GCD is the largest number that evenly divides the two numbers (e.g. 2 is the greatest number that evenly goes into 4 and 6, so 2 is the GCD of 4 and 6.)",["addsub"],["gcd"],["all"],1000,function() {
+
+},function(processor, i) {
+    processor.registers.B.value = int8.random().value;
+    processor.registers.C.value = int8.random().value;
+},function(oldBlob, newBlob) {
+    return gcd(oldBlob.registers.B.value, oldBlob.registers.C.value) === newBlob.registers.A.value;
+},function(oldBlob) {
+    return {
+        registers: {
+            A: new int8(gcd(oldBlob.registers.B.value, oldBlob.registers.C.value))
+        }
+    };
+},Challenge.regDiff),new Challenge("prime","Prime Test","math","Set the value of <b>A</b> to <code>1</code> if the value stored in <b>BC</b> is prime. Set the value of <b>A</b> to <code>0</code> otherwise.",["addsub","regpair"],["prime"],["all"],65536,function() {
+
+},function(processor, i) {
+    processor.registers.BC.value = i;
+},function(oldBlob, newBlob) {
+    return newBlob.registers.A.value === +isPrime(oldBlob.registers.BC.value);
+},function(oldBlob) {
+    return {
+        registers: {
+            A: new int8(isPrime(oldBlob.registers.BC.value))
         }
     };
 },Challenge.regDiff)]; // will be built from challenges.cdoc
