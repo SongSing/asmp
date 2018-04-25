@@ -385,21 +385,21 @@ class RegisterWidget {
 
         if (!settingsObject.hasOwnProperty("registerDisplayType")) {
             settingsObject.registerDisplayType = {
-                A: "hex",
-                B: "hex",
-                C: "hex",
-                D: "hex",
-                E: "hex",
-                H: "hex",
-                L: "hex",
-                BC: "hex",
-                DE: "hex",
-                HL: "hex",
-                PSW: "hex",
-                M: "hex",
+                A: "dec",
+                B: "dec",
+                C: "dec",
+                D: "dec",
+                E: "dec",
+                H: "dec",
+                L: "dec",
+                BC: "dec",
+                DE: "dec",
+                HL: "dec",
+                PSW: "dec",
+                M: "dec",
                 S: "bin",
-                PC: "hex",
-                SP: "hex"
+                PC: "dec",
+                SP: "dec"
             };
         }
 
@@ -653,7 +653,7 @@ class DiffWidget {
         var arr = [];
 
         for (var i = 0; i < 8 * MemoryWidget.pageLength; i++) {
-            arr[i] = new int8(blob[i + start.value]);
+            arr[i] = new int8(blob[i + coerceInt(start)]);
         }
 
         var w = new ShallowMemoryWidget(arr, start);
@@ -1132,5 +1132,98 @@ class StatusWidget {
         }
 
         this.$inner.innerText = t.join(", ") || "(None)";
+    }
+}
+
+class SettingsWidget {
+    constructor(settingsObject) {
+        this.settingsObject = settingsObject || window.settingsObject;
+
+        this.$element = document.createElement("div");
+        this.$element.className = "settingsWidget";
+
+        this.$inner = document.createElement("div");
+        this.$inner.className = "settingsWidget-inner";
+        this.$element.appendChild(this.$inner);
+
+        this.$header = document.createElement("div");
+        this.$header.className = "settingsWidget-inner-header";
+        this.$header.innerText = "Settings";
+        this.$inner.appendChild(this.$header);
+
+        this.$settings = document.createElement("div");
+        this.$settings.className = "settingsWidget-inner-settings";
+        this.$inner.appendChild(this.$settings);
+        
+        this.$buttons = document.createElement("div");
+        this.$buttons.className = "settingsWidget-buttons";
+        this.$inner.appendChild(this.$buttons);
+
+        this.$back = document.createElement("button");
+        this.$back.className = "settingsWidget-buttons-back";
+        this.$back.addEventListener("click", this.doGoBack.bind(this));
+        this.$back.innerText = "Cancel";
+        this.$buttons.appendChild(this.$back);
+
+        this.$save = document.createElement("button");
+        this.$save.className = "settingsWidget-buttons-save";
+        this.$save.addEventListener("click", this.doSave.bind(this));
+        this.$save.innerText = "Save";
+        this.$buttons.appendChild(this.$save);
+
+        // settings //
+
+        this.$setting_playSpeed = SettingsWidget.createSetting("playSpeed");
+        this.$setting_playSpeed_input = document.createElement("input");
+        this.$setting_playSpeed_input.setAttribute("type", "number");
+        this.$setting_playSpeed_input.setAttribute("min", "1");
+        this.$setting_playSpeed_input.setAttribute("max", "2000");
+        this.$setting_playSpeed_input.value = this.settingsObject.playSpeed;
+        this.$settings.appendChild(this.$setting_playSpeed);
+        this.$setting_playSpeed.appendChild(this.$setting_playSpeed_input);
+    }
+
+    static createSetting(name) {
+        var $ret = document.createElement("div");
+        $ret.className = "setting setting-" + name;
+
+        var $label = document.createElement("div");
+        $label.className = "setting-label";
+        $label.innerText = name.substr(0, 1).toUpperCase() + name.substr(1).replace(/([A-Z])/g, " $1");
+        $ret.appendChild($label);
+
+        return $ret;
+    }
+
+    reset() {
+        this.$setting_playSpeed_input.classList.remove("invalid");
+        this.$setting_playSpeed_input.value = this.settingsObject.playSpeed;
+    }
+
+    hide() {
+        hideElement__(this.$element);
+    }
+
+    show() {
+        this.reset();
+        showElement__(this.$element);
+    }
+
+    doGoBack() {
+        this.hide();
+    }
+
+    doSave() {
+        var playSpeed = parseInt(this.$setting_playSpeed_input.value);
+
+        if (isNaN(playSpeed)) {
+            this.$setting_playSpeed_input.classList.add("invalid");
+            return;
+        }
+
+        this.settingsObject.playSpeed = playSpeed;
+
+        Storage.set("settings", this.settingsObject);
+        this.hide();
     }
 }

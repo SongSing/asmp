@@ -57,6 +57,9 @@ class Challenge {
     }
 
     static memDiff(diffWidget, oldBlob, expectedBlob) {
+        if (this.root === undefined || this.newRoot === undefined) {
+            console.log("HEY MEMORY CHALLENGES NEED TO SET VALUES this.root AND this.newRoot THANKS");
+        }
         /*console.log("old", oldBlob, 
         "expected", expectedBlob,
         "current", processor.memory.toBlob());*/

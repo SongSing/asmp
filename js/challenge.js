@@ -57,6 +57,9 @@ class Challenge {
     }
 
     static memDiff(diffWidget, oldBlob, expectedBlob) {
+        if (this.root === undefined || this.newRoot === undefined) {
+            console.log("HEY MEMORY CHALLENGES NEED TO SET VALUES this.root AND this.newRoot THANKS");
+        }
         /*console.log("old", oldBlob, 
         "expected", expectedBlob,
         "current", processor.memory.toBlob());*/
@@ -503,7 +506,35 @@ var challenges = [new Challenge("sandbox","Sandbox","bootcamp",":)",[],["sandbox
             A: new int8(isPrime(oldBlob.registers.BC.value))
         }
     };
-},Challenge.regDiff)]; // will be built from challenges.cdoc
+},Challenge.regDiff),new Challenge("memreg","Memory Register","bootcamp","Add 5 to the value stored in memory at the location specified by <b>HL</b>, then set the memory location immediately following that to double the value.<br><br>e.g. If the value at the memory address specified by the value of <b>HL</b> was 7, the value at the memory address specified by the value of HL plus one should be set to <code>(7 + 5) * 2 = 24</code>.<br><br>The Memory Register <b>M</b> is a special register in that its value is NOT independent from memory.<br><br>Operating upon the <b>M</b> register will affect the value stored in memory at the location specified by the value of <b>HL</b>.<br><br>For example, if the value at memory address 200 was 8, in order to increment this value to 9, one could set the value of <b>HL</b> to 200 and pass <b>M</b> as the argument for the <op>inr</op> instruction.",["regpair"],["memreg"],["all"],65536,function() {
+
+},function(processor, i) {
+    processor.registers.HL.value = randomInt(5000,8000);
+    processor.memory.setByte(processor.registers.HL.value, int8.random());
+    this.root = this.newRoot = processor.registers.HL.value;
+},function(oldBlob, newBlob) {
+    var om = oldBlob.memoryBlob;
+    var nm = newBlob.memoryBlob;
+    var i = oldBlob.registers.HL.value;
+
+    //console.log(om, nm);
+
+    return (nm[i] !== undefined) && (nm[i + 1] !== undefined) && (om[i] !== undefined)
+        && ((coerceInt(nm[i]) & 0xff) === ((coerceInt(om[i]) + 5) & 0xff))
+        && ((coerceInt(nm[i + 1]) & 0xff) === ((2 * (coerceInt(om[i]) + 5)) & 0xff));
+},function(oldBlob) {
+    var om = oldBlob.memoryBlob;
+    var i = oldBlob.registers.HL.value;
+
+    var ret = {
+        memoryBlob: []
+    };
+
+    ret.memoryBlob[i] = new int8(coerceInt(om[i]) + 5);
+    ret.memoryBlob[i + 1] = new int8((coerceInt(om[i]) + 5) * 2);
+    
+    return ret;
+},Challenge.memDiff)]; // will be built from challenges.cdoc
 
 function populateChallengeContainer() {
     widgets.challengeListContainer.clear();

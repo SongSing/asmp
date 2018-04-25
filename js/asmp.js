@@ -27,6 +27,21 @@ function init() {
     processor = new i8080();
     assembler = new Assembler(processor);
 
+    challengeStatusObject = Storage.get("challengeStatus", {});
+    settingsObject = Storage.get("settings", {});
+
+    var version = Storage.get("version", VERSION);
+    if (version != VERSION) {
+        challengeStatusObject = {};
+        settingsObject = {};
+
+        Storage.set("challengeStatus", challengeStatusObject);
+        Storage.set("settings", settingsObject);
+        Storage.set("version", VERSION);
+    }
+
+    initSettings();
+
     widgets = {
         find: function(selector, forceRefresh) {
             if (forceRefresh === undefined) forceRefresh = false;
@@ -52,6 +67,7 @@ function init() {
         fade: new WrapperWidget(document.getElementById("fade")),
         tutorialText: new WrapperWidget(document.getElementById("tutorialText")),
         reference: new ReferenceWidget(reference),
+        settings: new SettingsWidget(settingsObject),
         challengeListContainer: new ChallengeListContainerWidget(),
         deviceContainer: new DeviceContainerWidget(),
         stack: new StackWidget(processor.stack),
@@ -76,18 +92,6 @@ function init() {
     }
 
 
-    challengeStatusObject = Storage.get("challengeStatus", {});
-    settingsObject = Storage.get("settings", {});
-
-    var version = Storage.get("version", VERSION);
-    if (version != VERSION) {
-        challengeStatusObject = {};
-        settingsObject = {};
-
-        Storage.set("challengeStatus", challengeStatusObject);
-        Storage.set("settings", settingsObject);
-        Storage.set("version", VERSION);
-    }
 
     document.getElementById("assemble").addEventListener("click", () => doAssemble());
     document.getElementById("play").addEventListener("click", () => doPlay());
@@ -98,6 +102,7 @@ function init() {
     document.getElementById("testcase").addEventListener("click", () => doTestCase());
     //document.getElementById("resetDevice").addEventListener("click", () => doResetDevice());
     document.getElementById("ref").addEventListener("click", () => doShowRef());
+    document.getElementById("settings").addEventListener("click", () => doShowSettings());
     document.getElementById("back").addEventListener("click", () => doGoBack());
     /*document.getElementById("stackButton-memory").addEventListener("click", () => doToggleMemory());
     document.getElementById("stackButton-stack").addEventListener("click", () => doToggleStack());*/
@@ -121,6 +126,7 @@ function init() {
     widgets.panel2.appendWidget(widgets.registerContainer);
     widgets.workspaceContainer.appendWidget(widgets.diff);
     widgets.workspaceContainer.appendWidget(widgets.smallReference);
+    widgets.workspaceContainer.appendWidget(widgets.settings);
 
     widgets.panel2.appendWidget(widgets.memory);
     widgets.panel2.appendWidget(widgets.memorySeek);
@@ -135,6 +141,7 @@ function init() {
     widgets.tutorialText.hide();
     widgets.reference.hide();
     widgets.smallReference.hide();
+    widgets.settings.hide();
     widgets.challengeListContainer.show();
 
     populateChallengeContainer();
@@ -218,6 +225,7 @@ function spotlightElement($e, html, x, y, callback) {
         spotlightZ = getComputedStyle($e)["z-index"];
         $e.style["z-index"] = "1001";
         $currentSpotlight = $e;
+        $e.scrollIntoView(true);
     }
 }
 
@@ -250,7 +258,8 @@ function doTutorial() {
         [widgets.find("#test"), "<b>Test</b> generates a series of test registers and/or test memory blocks and runs your program against them<br>to check to see if you've successfully completed the challenge.", 80, 305],
         [widgets.find("#testcase"), "<b>Gen Test Case</b> puts the processor into a test state<br>for debugging purposes. This is useful<br>if you want to step through your attempted solution.", 80, 360],
         [widgets.find("#ref"), "<b>Ref</b> will open the instruction reference.<br>This is useful if you've forgotten what commands do or are<br>curious as to what other commands might exist", 80, 425],
-        [widgets.find("#back"), "<b>Back</b> will take you back to the challenge list.<br>All of your code is saved per challenge,<br>so don't worry about losing anything you're working on!", 80, 490],
+        [widgets.find("#settings"), "<b>Settings</b> will allow you to change certain settings, such as the speed at which programs <b>play</b>.", 80, 505],
+        [widgets.find("#back"), "<b>Back</b> will take you back to the challenge list.<br>All of your code is saved per challenge,<br>so don't worry about losing anything you're working on!", 80, 550],
         [widgets.console.$element, "This is the console.<br>Error messages and test results will appear here, alongside other things.", 650, -220],
         [null, "That's all there is to it!<br>This tutorial will run every time this challenge is accessed, so if you ever get confused, feel free to come back!<br>Have fun! :)", 350, 50]
     ];
@@ -268,6 +277,14 @@ function doTutorial() {
 
 function endTutorial() {
     spotlightOff();
+}
+
+function initSettings() {
+    if (!settingsObject.playSpeed) {
+        settingsObject.playSpeed = 200;
+    }
+    
+    Storage.set("settings", settingsObject);
 }
 
 function doAssemble(silent) {
@@ -304,7 +321,7 @@ function doPlay() {
             }
 
             doStep();
-        }, 100);
+        }, settings.playSpeed);
 
         playing = true;
     }
@@ -401,6 +418,10 @@ function doResetDevice() {
 
 function doShowRef() {
     widgets.reference.show();
+}
+
+function doShowSettings() {
+    widgets.settings.show();
 }
 
 function doGoBack() {

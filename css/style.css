@@ -142,7 +142,7 @@ code, .ref-usage {
   border: 1px solid #aaa;
 }
 
-.tutorialButtonContainer, .diffWidget-buttons > button {
+.tutorialButtonContainer, .diffWidget-buttons > button, .settingsWidget-buttons > button {
   color:#5599CC;
   font-size:18px;
   text-align:right;
@@ -151,6 +151,9 @@ code, .ref-usage {
   font-family:sans-serif;
   font-weight:bold;
   cursor:pointer;
+  background:transparent;
+  border:0;
+  color:#5599CC;
 }
 
 .tutorialNext {
@@ -346,7 +349,7 @@ code, .ref-usage {
   font-family:monospace;
 }
 
-.diffWidget, .ref-widget, .ref-small-widget {
+.diffWidget, .ref-widget, .ref-small-widget, .settingsWidget {
   position:absolute;
   left:0;
   top:0;
@@ -354,6 +357,20 @@ code, .ref-usage {
   bottom:0;
   z-index:10000;
   background:rgba(0,0,0,0.7);
+}
+
+.settingsWidget-inner-header {
+  font-size:24px;
+  margin-bottom:12px;
+  font-weight:bold;
+}
+
+.setting-label {
+  width:150px;
+}
+
+.settingsWidget-inner-settings > div > * {
+  display:inline-block
 }
 
 .diffWidget-itemContainer > .device {
@@ -366,18 +383,12 @@ code, .ref-usage {
   font-weight: bold;
 }
 
-.diffWidget-buttons-challenges {
+.diffWidget-buttons-challenges,.settingsWidget-buttons-save {
   float: right;
 }
 
-.diffWidget-buttons-back {
+.diffWidget-buttons-back, .settingsWidget-buttons-back {
   float: left;
-}
-
-.diffWidget-buttons > button {
-  background:transparent;
-  border:0;
-  color:#5599CC;
 }
 
 .ref-focused {
@@ -388,7 +399,7 @@ code, .ref-usage {
 .diffWidget-itemContainer > .registerContainer {
 }
 
-.diffWidget-itemsContainer {
+.diffWidget-itemsContainer, .settingsWidget-inner {
   position:absolute;
   left:50%;
   top:50%;

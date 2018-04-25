@@ -1399,7 +1399,7 @@ class Memory {
         if (!this.array[index16]) {
             this.array[index16] = new int8(value8);
         } else {
-            this.array[index16].value = value8;
+            this.array[index16] = new int8(value8); // TODO: make faster
         }
     }
 

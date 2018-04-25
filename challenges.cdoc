@@ -745,3 +745,53 @@ The GCD is the largest number that evenly divides the two numbers (e.g. 2 is the
 }
 `diff: Challenge.regDiff
 ```
+`name: memreg
+`title: Memory Register
+`category: bootcamp
+`requires: regpair
+`unlocks: memreg
+`tests: 65536
+`registers: all
+`desc: Add 5 to the value stored in memory at the location specified by <b>HL</b>, then set the memory location immediately following that to double the value.
+
+e.g. If the value at the memory address specified by the value of <b>HL</b> was 7, the value at the memory address specified by the value of HL plus one should be set to <code>(7 + 5) * 2 = 24</code>.
+
+The Memory Register <b>M</b> is a special register in that its value is NOT independent from memory.
+
+Operating upon the <b>M</b> register will affect the value stored in memory at the location specified by the value of <b>HL</b>.
+
+For example, if the value at memory address 200 was 8, in order to increment this value to 9, one could set the value of <b>HL</b> to 200 and pass <b>M</b> as the argument for the <op>inr</op> instruction.
+`invoke: function() {
+
+}
+`setup: function(processor, i) {
+    processor.registers.HL.value = randomInt(5000,8000);
+    processor.memory.setByte(processor.registers.HL.value, int8.random());
+    this.root = this.newRoot = processor.registers.HL.value;
+}
+`test: function(oldBlob, newBlob) {
+    var om = oldBlob.memoryBlob;
+    var nm = newBlob.memoryBlob;
+    var i = oldBlob.registers.HL.value;
+
+    //console.log(om, nm);
+
+    return (nm[i] !== undefined) && (nm[i + 1] !== undefined) && (om[i] !== undefined)
+        && ((coerceInt(nm[i]) & 0xff) === ((coerceInt(om[i]) + 5) & 0xff))
+        && ((coerceInt(nm[i + 1]) & 0xff) === ((2 * (coerceInt(om[i]) + 5)) & 0xff));
+}
+`getExpected: function(oldBlob) {
+    var om = oldBlob.memoryBlob;
+    var i = oldBlob.registers.HL.value;
+
+    var ret = {
+        memoryBlob: []
+    };
+
+    ret.memoryBlob[i] = new int8(coerceInt(om[i]) + 5);
+    ret.memoryBlob[i + 1] = new int8((coerceInt(om[i]) + 5) * 2);
+    
+    return ret;
+}
+`diff: Challenge.memDiff
+```
