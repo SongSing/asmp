@@ -2924,7 +2924,7 @@ class Assembler {
                 };
             }
 
-            if (z.newStr) {
+            if (z.newStr !== undefined && z.newStr !== null) {
                 lines[i] = z.newStr;
             }
 
@@ -3068,6 +3068,14 @@ class Assembler {
                     z.newStr = n;
                     return z;
                 }
+            } else if (labelSet && firstWord.trim() === "") {
+                var sl = this.setLabel(labelSet, addr);
+                if (sl.error) return { error: sl.error };
+                return {
+                    error: null,
+                    length: 0,
+                    newStr: ""
+                };
             }
 
             return {
