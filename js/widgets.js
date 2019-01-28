@@ -27,6 +27,7 @@ class CodeWidget {
         this.lengthArray = lengthArray;
         this.pc = pc;
         this.hilite = -1;
+        this.indentWidth = 2;
         this.$element = document.createElement("div");
         this.$element.className = "inputContainer";
 
@@ -42,30 +43,204 @@ class CodeWidget {
         this.$input.addEventListener("input", (function() { this.changed = true; }).bind(this));
         this.$input.addEventListener("scroll", this.updateLineNumbers.bind(this));
 
+        var self = this;
+
         this.$input.addEventListener("keydown", function(e) {
-            if (e.keyCode === 9 || e.which === 9) {
+            if (e.keyCode === 9 || e.which === 9) { // tab
                 e.preventDefault();
                 var s = this.selectionStart;
                 var se = this.selectionEnd;
 
-                if (e.shiftKey) {
-                    if (this.value.substr(s - 1, 1) === "\t") {
-                        this.value = this.value.substr(0, s - 1) + this.value.substr(s);
-                        this.selectionStart = s - 1;
-                        this.selectionEnd = se - 1;
-                    }
+                var startingLine = self.lineNumberFromIndex(s);
+                var endingLine = self.lineNumberFromIndex(se);
+
+                // aligning indent //
+                if (e.shiftKey || s !== se) {
+                    var arr = self.alignIndentRange(startingLine, endingLine, e.shiftKey);
+                    this.selectionStart = s + arr[0];
+                    var sum = arr.reduce(function(prev, curr) { return prev + curr });
+                    this.selectionEnd = se + sum;
                     return;
                 }
+                
+                // in one spot //
+                if (s === se) {
+                    var spacesPreceding = true;
+    
+                    for (var i = s - 1; i >= 0; i--) {
+                        if (this.value[i] !== " ") {
+                            spacesPreceding = this.value[i] === "\n";
+                            break;
+                        }
+                    }
 
-                this.value = this.value.substr(0, s) + "\t" + this.value.substr(s);
-                this.selectionStart = s + 1;
-                this.selectionEnd = se + 1;
+                    console.log(spacesPreceding);
+
+                    if (s === 0 || spacesPreceding) {
+                        var sum = self.indentLine(startingLine);
+                        this.selectionStart = s + sum;
+                        this.selectionEnd = s + sum;
+                    } else { // in the middle of line
+                        self.value = self.value.substr(0, s) + self.fullIndentToken + self.value.substr(s);
+                        this.selectionStart = s + self.indentWidth;
+                        this.selectionEnd = s + self.indentWidth;
+                    }
+                }
+            } else if (e.keyCode === 13 || e.which === 13) { // enter
+                e.preventDefault();
+                var s = this.selectionStart;
+                var se = this.selectionEnd;
+
+                if (s !== se) {
+                    self.value = self.value.substr(0, s) + self.value.substr(se);
+                    se = s;
+                }
+
+                var startingLine = self.lineNumberFromIndex(s);
+                var endingLine = self.lineNumberFromIndex(se);
+
+                var lineValue = self.lines[startingLine];
+
+                var indentInsert = "";
+
+                for (var i = 0; i < lineValue.length; i++) {
+                    if (lineValue[i] === " ") {
+                        indentInsert += " ";
+                    } else {
+                        break;
+                    }
+                }
+
+                self.value = self.value.substr(0, s) + "\n" + indentInsert + self.value.substr(s);
+                this.selectionStart = s + indentInsert.length + 1;
+                this.selectionEnd = s + indentInsert.length + 1;
+            } else if (e.keyCode === 8 || e.which === 8) { // backspace
+                if (this.selectionStart === this.selectionEnd) {
+                    var lineNumber = self.lineNumberFromIndex(this.selectionStart);
+                    if (self.lines[lineNumber].match(/^\s+$/)) {
+                        e.preventDefault();
+                        self.removeLine(self.lineNumberFromIndex(this.selectionStart));
+
+                        if (lineNumber > 0) {
+                            lineNumber--;
+                        }
+                        
+                        this.selectionStart = self.indexFromLineNumber(lineNumber) + self.lines[lineNumber].length;
+                        this.selectionEnd = this.selectionStart;
+                    }
+                }
             }
         });
     }
 
+    alignIndentRange(startLine, endLine, unindent) {
+        var ret = [];
+
+        for (var i = startLine; i <= endLine; i++) {
+            ret.push(this.alignIndent(i, unindent));
+        }
+
+        return ret;
+    }
+
+    unindentLineRange(start, end) {
+        return this.alignIndentRange(start, end, true);
+    }
+
+    indentLineRange(start, end) {
+        return this.alignIndentRange(start, end, false);
+    }
+
+    alignIndent(lineNumber, _unindent) {
+        var indent = !_unindent;
+        var line = this.lines[lineNumber];
+        var nsIndex = 0;
+
+        var numSpaces = 0;
+        for (var i = 0; i < line.length; i++) {
+            if (line[i] === " ") {
+                numSpaces++;
+            } else {
+                nsIndex = i;
+                break;
+            }
+        }
+
+        var targetNum;
+
+        if (indent) {
+            targetNum = (~~(numSpaces / this.indentWidth) + 1) * this.indentWidth;
+        } else {
+            if (numSpaces <= this.indentWidth) {
+                targetNum = 0;
+            } else {
+                targetNum = ~~((numSpaces - 1) / this.indentWidth) * this.indentWidth;
+            }
+        }
+
+        var spaceString = "";
+
+        for (var i = 0; i < targetNum; i++) {
+            spaceString += " ";
+        }
+
+        this.setLine(lineNumber, spaceString + line.substr(nsIndex));
+
+        return targetNum - numSpaces;
+    }
+
+    unindentLine(lineNumber) {
+        return this.alignIndent(lineNumber, true);
+    }
+
+    indentLine(lineNumber) {
+        return this.alignIndent(lineNumber, false);
+    }
+
+    setLine(line, value) {
+        var lines = this.lines;
+        lines[line] = value;
+        this.lines = lines;
+    }
+
+    indexFromLineNumber(line) {
+        if (line === 0) {
+            return 0;
+        }
+        
+        var ret = 0;
+
+        for (var i = 0; i < this.value.length; i++) {
+            if (this.value[i] === "\n") {
+                ret++;
+                if (ret === line) {
+                    return i + 1;
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    lineNumberFromIndex(index) {
+        var ret = 0;
+        for (var i = 0; i < index; i++) {
+            if (this.value[i] === "\n") {
+                ret++;
+            }
+        }
+
+        return ret;
+    }
+
+    removeLine(lineNumber) {
+        let lines = this.lines;
+        lines.splice(lineNumber, 1);
+        this.lines = lines;
+    }
+
     updateLineNumbers() {
-        var lines = this.$input.value.replace(/\r/g, "").split("\n");
+        var lines = this.value.replace(/\r/g, "").split("\n");
     
         var ln = [];
     
@@ -99,6 +274,23 @@ class CodeWidget {
         this.$input.value = s;
         this.changed = true;
         this.updateLineNumbers();
+    }
+
+    get lines() {
+        return this.value.split("\n");
+    }
+
+    set lines(lineArray) {
+        this.value = lineArray.join("\n");
+    }
+
+    get fullIndentToken() {
+        var ret = "";
+        for (var i = 0; i < this.indentWidth; i++) {
+            ret += " ";
+        }
+
+        return ret;
     }
 }
 

@@ -551,7 +551,7 @@ code, .ref-usage {
   position: relative;
 }
 
-.input, .lineNumbers {
+.input, .output, .lineNumbers {
   width:calc(100% - 50px);
   height:500px;
   background:rgba(255,255,255,1);
@@ -569,6 +569,10 @@ code, .ref-usage {
   resize:none;
   white-space:pre;
   overflow:auto;
+}
+
+.output {
+  pointer-events:none;
 }
 
 .lineNumbers {
